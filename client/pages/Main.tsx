@@ -43,7 +43,7 @@ export default function Index() {
       </section>
 
       {/* Recent Diary Records */}
-      <section className="container max-w-[1440px] mx-auto px-4 sm:px-6 py-16">
+      <section className="container max-w-[1440px] px-4 sm:px-6 py-16">
         <div className="text-center">
           <p className="text-sm text-gray-500">Recent Diary Records</p>
           <h2 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
@@ -51,20 +51,70 @@ export default function Index() {
           </h2>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {recent.map((r, i) => (
-            <article key={i} className="group">
-              <div className="rounded-lg border bg-gray-50 aspect-[4/3] grid place-items-center">
-                <Image className="h-16 w-16 text-gray-400" />
+        <div className="w-full inline-flex justify-center items-center gap-7 mt-16">
+          <div className="p-5 bg-white rounded-[10px] inline-flex flex-col justify-center items-center gap-7">
+            <div
+              data-style="Image"
+              className="w-96 h-60 bg-indigo-50 inline-flex justify-center items-center gap-2.5"
+            ></div>
+            <div className="w-96 flex flex-col justify-center items-center gap-4">
+              <div className="self-stretch text-center justify-center text-neutral-800 text-2xl font-semibold font-['Inter'] capitalize tracking-tight">
+                2025. 08. 27
               </div>
-              <h3 className="mt-4 text-center font-semibold text-gray-900">
-                {r.date}
-              </h3>
-              <p className="mt-1 text-center text-sm text-gray-600">
-                {r.summary}
-              </p>
-            </article>
-          ))}
+              <div className="self-stretch text-center justify-center text-neutral-500 text-xl font-normal font-['Inter'] capitalize leading-normal tracking-tight">
+                오늘의 감정 요약 : 즐거움 , 행복함
+                <br />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 bg-white rounded-[10px] inline-flex flex-col justify-start items-start gap-7">
+            <div
+              data-style="Image"
+              className="w-96 h-60 bg-indigo-50 inline-flex justify-center items-center gap-2.5"
+            ></div>
+            <div className="w-96 flex flex-col justify-center items-center gap-4">
+              <div className="self-stretch text-center justify-center text-neutral-800 text-2xl font-semibold font-['Inter'] capitalize tracking-tight">
+                2025. 08. 28
+              </div>
+              <div className="self-stretch text-center justify-center text-neutral-500 text-xl font-normal font-['Inter'] capitalize leading-normal tracking-tight">
+                오늘의 감정 요약 : 우울함 , 아쉬움
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full inline-flex justify-center items-center gap-7 mt-16">
+          <div className="p-5 bg-white rounded-[10px] inline-flex flex-col justify-center items-center gap-7">
+            <div
+              data-style="Image"
+              className="w-96 h-60 bg-indigo-50 inline-flex justify-center items-center gap-2.5"
+            ></div>
+            <div className="w-96 flex flex-col justify-center items-center gap-4">
+              <div className="self-stretch text-center justify-center text-neutral-800 text-2xl font-semibold font-['Inter'] capitalize tracking-tight">
+                2025. 08. 29
+              </div>
+              <div className="self-stretch text-center justify-center text-neutral-500 text-xl font-normal font-['Inter'] capitalize leading-normal tracking-tight">
+                오늘의 감정 요약 : 즐거움 , 행복함
+                <br />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 bg-white rounded-[10px] inline-flex flex-col justify-start items-start gap-7">
+            <div
+              data-style="Image"
+              className="w-96 h-60 bg-indigo-50 inline-flex justify-center items-center gap-2.5"
+            ></div>
+            <div className="w-96 flex flex-col justify-center items-center gap-4">
+              <div className="self-stretch text-center justify-center text-neutral-800 text-2xl font-semibold font-['Inter'] capitalize tracking-tight">
+                2025. 08. 30
+              </div>
+              <div className="self-stretch text-center justify-center text-neutral-500 text-xl font-normal font-['Inter'] capitalize leading-normal tracking-tight">
+                오늘의 감정 요약 : 우울함 , 아쉬움
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
