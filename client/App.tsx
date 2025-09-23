@@ -14,6 +14,7 @@ import Results from "@/pages/Results";
 import Bookmark from "@/pages/Bookmark";
 import Profile from "@/pages/Profile";
 import Recommendation from "@/pages/Recommendation";
+import MyPage from "@/pages/MyPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/bookmark" element={<Bookmark />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/recommendation" element={<Recommendation />} />
+            <Route path="/mypage" element={<MyPage />} />            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
