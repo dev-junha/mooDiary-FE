@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./client/**/*.{ts,tsx}"],
+  content: ["./src/**/*.{ts,tsx}"],
   prefix: "",
   theme: {
     container: {
@@ -14,7 +14,21 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Noto Sans KR", "Inter", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Noto Sans", "Ubuntu", "Cantarell", "Helvetica Neue", "Arial", "sans-serif"],
+        sans: [
+          "Noto Sans KR",
+          "Inter",
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "Roboto",
+          "Noto Sans",
+          "Ubuntu",
+          "Cantarell",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif",
+        ],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -60,15 +74,14 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        
       },
 
       width: {
-          18: "4.5rem",
-        },
-        height: {
-          18: "4.5rem",
-        },
+        18: "4.5rem",
+      },
+      height: {
+        18: "4.5rem",
+      },
 
       borderRadius: {
         lg: "var(--radius)",

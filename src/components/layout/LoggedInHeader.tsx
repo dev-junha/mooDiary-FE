@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "../../components/ui/button";
+import { cn } from "../../lib/utils";
 import { Menu, X, PenSquare } from "lucide-react";
-import SideBar from "/sidebar.svg";
+
+/*
+  이미지 api에서 받아서 넣기 
+*/
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -12,6 +15,7 @@ const navItems = [
   { to: "/bookmark", label: "Bookmark" },
   { to: "/profile", label: "MyProfile" },
   { to: "/recommendation", label: "Recommendation" },
+  { to : "/mypage", label : "MyPage"},
 ];
 
 export default function Header() {
@@ -43,14 +47,15 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-6 ml-52">
-          <Button variant="outline" className="px-5">SignUp</Button>
-          <Button className="px-5">Login</Button>
+        <div className="hidden md:flex items-center ml-52">
+          <Button className="px-5 w-14 h-14">
+            <img className="w-14 h-14 outline outline-1" src="https://placehold.co/56x56" />
+          </Button>
         </div>
 
         <div className="hidden md:flex items-center w-12 h-12 ml-20">
               <button className="flex items-center justify-center w-12 h-12">
-                <img src={SideBar} alt="hamburgerbar" className="w-12 h-12 object-contain" />
+                <img src="/sidebar.svg" alt="hamburgerbar" className="w-12 h-12 object-contain" />
               </button>
         </div>
 
@@ -83,14 +88,12 @@ export default function Header() {
                 {item.label}
               </NavLink>
             ))}
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="flex-1 rounded-full">SignUp</Button>
-              <Button className="flex-1 rounded-full">Login</Button>
-            </div>
-
-            <div className="flex pt-2 w-12 h-12">
+            <div className="flex pt-2 w-12 h-12 gap-2">
               <button className="flex items-center justify-center">
-                <img src={SideBar} alt="hamburgerbar" className="w-12 h-12 object-contain" />
+                <PenSquare className="h-8 w-8" />              
+              </button>
+              <button className="flex items-center justify-center">
+                <img src="/sidebar.svg" alt="hamburgerbar" className="w-12 h-12 object-contain" />
               </button>
             </div>
           </div>

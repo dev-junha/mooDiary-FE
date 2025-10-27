@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
     fs: {
       allow: [
         ".", // 프로젝트 루트 허용
-        "./client",
+        "./src",
         "./shared",
         "./public", // public 폴더 허용
       ],
@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [react(), expressPlugin()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./client"),
+      "@": path.resolve(__dirname, "./src"),
       "@shared": path.resolve(__dirname, "./shared"),
     },
   },
