@@ -1,13 +1,13 @@
 // vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
-import path from 'path'  // ← 이거 추가!
+import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),  // ← 이거 추가!
+      '@': path.resolve(new URL('./src', import.meta.url).pathname), // ← 이거 한 줄!
     },
   },
   build: {
