@@ -4,6 +4,31 @@
 ```
 npm create vite@latest my-react-app --template react
 ```
+```
+> npx
+> create-vite my-react-app react
+
+|
+o  Select a framework:
+|  React
+|
+o  Select a variant:
+|  JavaScript + React Compiler
+|
+o  Use rolldown-vite (Experimental)?:
+|  No
+|
+o  Install with npm and start now?
+|  No
+|
+o  Scaffolding project in C:\Users\catholic\Desktop\my-react-app...
+|
+—  Done. Now run:
+
+  cd my-react-app
+  npm install
+  npm run dev
+```
 
 ### 2단계 : 프로젝트 폴더로 이동
 생성된 폴더로 이동합니다.
