@@ -64,6 +64,21 @@ const apiSubmitDiary = (formData) => {
   return new Promise(resolve => setTimeout(() => resolve({ status: 'success', message: '일기 저장 완료', diaryId: 'diary-abc' }), 1000));
 };
 
+/** (더미) 옵션 변경 실시간 API */
+const apiUpdateOptions = (optionName, newValue) => {
+  console.log("--- API CALL: apiUpdateOptions ---");
+  // 어떤 스위치가(optionName) 어떤 값으로(newValue) 변경되었는지 정확히 로그
+  console.log(`[옵션 변경] ${optionName} 스위치가 ${newValue ? 'ON' : 'OFF'} (으)로 변경됨`); 
+  
+  return new Promise(resolve => {
+    setTimeout(() => {
+      // 응답 메시지도 더 구체적으로 변경
+      const message = `${optionName} 옵션이 ${newValue ? '활성화' : '비활성화'}되었습니다.`;
+      resolve({ status: 'success', message: message });
+    }, 500); // 0.5초 딜레이 시뮬레이션
+  });
+};
+
 
 // --- 메인 페이지 컴포넌트 ---
 function HomePage() {
@@ -109,12 +124,23 @@ function HomePage() {
     fileInputRef.current.click();
   };
   
-  const handleOptionChange = (e) => {
+  const handleOptionChange = async (e) => {
     const { name, checked } = e.target;
-    setAnalysisOptions(prevOptions => ({
-      ...prevOptions,
+    // 1. React state는 이전과 동일하게 전체 객체로 업데이트
+    const newOptions = {
+      ...analysisOptions,
       [name]: checked,
-    }));
+    };
+    setAnalysisOptions(newOptions);
+  
+    // 2. (수정) API를 호출할 때는 [어떤 스위치(name)]가 [어떤 값(checked)]으로 변했는지 명시
+    try {
+      const response = await apiUpdateOptions(name, checked);
+      // API가 돌려준 구체적인 메시지 (예: "text 옵션이 활성화되었습니다.")를 로그
+      console.log(response.message); 
+    } catch (error) {
+      console.error("옵션 실시간 업데이트 실패:", error);
+    }
   };
 
   const createDiaryFormData = () => {
