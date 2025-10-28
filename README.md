@@ -2,18 +2,12 @@
 ### 1단계 : Vite + React 프로젝트 생성
 먼저 Vite로 React 프로젝트 템플릿을 생성합니다.
 ```
-npm create vite@latest my-react-app --template react
+npm create vite@latest my-react-app -- --template react
 ```
 ```
 > npx
 > create-vite my-react-app react
 
-|
-o  Select a framework:
-|  React
-|
-o  Select a variant:
-|  JavaScript + React Compiler
 |
 o  Use rolldown-vite (Experimental)?:
 |  No
@@ -42,10 +36,13 @@ React는 앱 실행에 필요하므로 **일반 의존성**으로 설치합니�
 npm install react@18 react-dom@18
 ```
 
-### 4단계 : Tailwind 3 설치 (개발용 의존성)
+### 4단계 : 개발용 의존성 (Vite 4 + Tailwind 3) 설치
 Tailwind는 개발 중에만 필요하므로 **개발용 의존성**(`-D` 또는 `--save-dev`)으로 설치합니다.
+- `vite@4`: React 18과 호환되는 Vite 4버전
+- `@vitejs/plugin-react@4`: Vite 4와 호환되는 React 플러그인
+- `tailwindcss@3`: Tailwind 3버전
 ```
-npm install -D tailwindcss@3 postcss autoprefixer
+npm install -D vite@4 @vitejs/plugin-react@4 tailwindcss@3 postcss autoprefixer
 ```
 
 ### 5단계 : Tailwind CSS 설정 파일 생성
