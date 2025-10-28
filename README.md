@@ -92,7 +92,11 @@ function App() {
 export default App
 ```
 
-### 9단계 : 개발 서버 실행
+### 9단계 : 개발 파일 붙여넣기
+`src`폴더와 `tailwind.config.js`파일에 작성했던 내용이 있다면 붙여넣기</br>
+`src\App.jsx`, `src\main.jsx`, `src\components\Header.jsx`, `src\Pages\HomePage.jsx` 등등...
+
+### 10단계 : 개발 서버 실행
 프로젝트를 실행합니다.
 ```
 npm run dev
