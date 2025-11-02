@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(new URL('./src', import.meta.url).pathname), // ← 이거 한 줄!
+      '@': path.resolve(new URL('./src', import.meta.url).pathname),
     },
   },
   build: {
