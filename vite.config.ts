@@ -1,6 +1,6 @@
 // vite.config.ts
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import react from "vitejs/plugin-react-swc";
 import path from "path";
 import { VitePWA } from "vite-plugin-pwa";
 
@@ -32,11 +32,7 @@ export default defineConfig({
       },
     }),
   ],
-  resolve: {
-    alias: {
-      "@": path.resolve(new URL("./src", import.meta.url).pathname),
-    },
-  },
+
   build: {
     outDir: "dist",
     rollupOptions: {
