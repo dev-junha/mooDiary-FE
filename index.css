@@ -1,13 +1,13 @@
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+/* src/index.css */
+html, body {
   margin: 0;
-}
-
-#root {
-  background: var(--Login_Color, linear-gradient(63deg, rgba(255, 250, 239, 0.90) 14.12%, rgba(255, 246, 174, 0.95) 53.34%, #FFFBF3 92.57%));
-  width: 100%;
-  height: 100%;
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(
+    63deg,
+    rgba(255, 250, 239, 0.90) 14.12%,
+    rgba(255, 246, 174, 0.95) 53.34%,
+    #FFFBF3 92.57%
+  );
+  background-attachment: fixed; /* 스크롤해도 배경 고정 */
 }
