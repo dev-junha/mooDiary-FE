@@ -17,6 +17,9 @@ import MyPage from "@/pages/MyPage";
 import RecMovie from  "@/pages/RecMovie";
 import RecMusic from "@/pages/RecMusic";
 import RecPoem from "@/pages/RecPoem";
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Onboarding from './pages/Onboarding'
 import RecPhrase from "@/pages/RecPhrase";
 
 
@@ -44,6 +47,9 @@ const App = () => (
               <Route path="/poem" element={<RecPoem />} /> {/* 시 추천 페이지 */}
               <Route path="/phrase" element={<RecPhrase />} /> {/* 명언 추천 페이지 */}
               <Route path="*" element={<NotFound />} />
+              <Route path="/login"  element={<Login />}/>
+              <Route path="/register"  element={<Register />}/>
+              <Route path="/onboarding"  element={<Onboarding />}/>
             </Routes>
         </BrowserRouter>
       </TooltipProvider>
