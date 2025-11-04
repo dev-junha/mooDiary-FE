@@ -1,6 +1,9 @@
+import "@/global.css";
+import { createRoot } from "react-dom/client";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
+import { AuthProvider } from "@/context/AuthContext";
 import Main from "@/pages/Main";
 import NotFound from "@/pages/NotFound";
 import WriteEdit from "@/pages/WriteEdit";
@@ -16,28 +19,27 @@ import RecPhrase from "@/pages/RecPhrase";
 import NewWrite from "@/pages/NewWrite";
 
 const queryClient = new QueryClient();
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Main />} />
-            <Route path="/write" element={<WriteEdit />} />
-            <Route path="/new_write" element={<NewWrite />} />
-            <Route path="/results" element={<Results />} />
-            <Route path="/bookmark" element={<Bookmark />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/recommendation" element={<RecBook />} />
-            <Route path="/mypage" element={<MyPage />} />
-            <Route path="/records" element={<NotFound />} />
-            <Route path="/movies" element={<RecMovie />} />
-            <Route path="/music" element={<RecMusic />} />
-            <Route path="/poem" element={<RecPoem />} />
-            <Route path="/phrase" element={<RecPhrase />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Main />} />
+        <Route path="/write" element={<WriteEdit />} />
+        <Route path="/new_write" element={<NewWrite />} />
+        <Route path="/results" element={<Results />} />
+        <Route path="/bookmark" element={<Bookmark />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/recommendation" element={<RecBook />} />
+        <Route path="/mypage" element={<MyPage />} />
+        <Route path="/records" element={<NotFound />} />
+        <Route path="/movies" element={<RecMovie />} />
+        <Route path="/music" element={<RecMusic />} />
+        <Route path="/poem" element={<RecPoem />} />
+        <Route path="/phrase" element={<RecPhrase />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
-export default App; 
+export default App;
