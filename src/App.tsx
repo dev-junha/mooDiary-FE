@@ -1,9 +1,5 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/context/AuthContext";
 
 import Main from "@/pages/Main";
 import NotFound from "@/pages/NotFound";
@@ -17,19 +13,17 @@ import RecMovie from "@/pages/RecMovie";
 import RecMusic from "@/pages/RecMusic";
 import RecPoem from "@/pages/RecPoem";
 import RecPhrase from "@/pages/RecPhrase";
+import NewWrite from "@/pages/NewWrite";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Main />} />
             <Route path="/write" element={<WriteEdit />} />
+            <Route path="/new_write" element={<NewWrite />} />
             <Route path="/results" element={<Results />} />
             <Route path="/bookmark" element={<Bookmark />} />
             <Route path="/profile" element={<Profile />} />
@@ -43,8 +37,6 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
   </QueryClientProvider>
 );
 

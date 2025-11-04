@@ -2,7 +2,8 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./src/**/*.{ts,tsx}"],
+  // .js 파일의 내용을 반영하여 .html, .js, .jsx 파일도 포함하도록 수정
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   prefix: "",
   theme: {
     container: {
@@ -14,6 +15,7 @@ export default {
     },
     extend: {
       fontFamily: {
+        // 기존 ts 파일의 sans 폰트 유지
         sans: [
           "Noto Sans KR",
           "Inter",
@@ -29,8 +31,12 @@ export default {
           "Arial",
           "sans-serif",
         ],
+        // js 파일에서 가져온 폰트 추가
+        default: ["Inter", "sans-serif"],
+        alt: ["Poppins", "sans-serif"],
       },
       colors: {
+        // --- 기존 ts 파일의 HSL 색상 (전부 유지) ---
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -74,20 +80,52 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+
+        // --- js 파일에서 가져온 색상 (추가) ---
+        "light-bg-start": "#fffbf2",
+        "light-bg-end": "#fff3d7",
+        "light-bg": "#FFF4D4",
+        "text-dark": "#212121",
+        "text-muted": "#D48F5F",
+        "text-placeholder": "#9C9A9A",
+        "text-light": "#FFFFFF",
+        "text-secondary": "#646161",
+        "text-accent": "#D48F5F",
+        "brand-brown": "#965D38",
+        "nav-active-orange": "#DCA67B",
+        "border-color": "#DCA67B",
+        "border-muted": "#666666",
+        "border-neutral": "#9C9A9A",
+        "button-primary-bg": "#FF8637",
+        "button-primary-hover": "#FFB652",
+        "button-secondary-bg": "#DCA67B",
+        "button-secondary-hover": "#BB8866",
+        "image-placeholder-bg": "#fff4d4",
+        "preview-placeholder-bg": "#eff3fd",
+        "toggle-bg": "#ffb752",
+        "toggle-inactive-bg": "#e5e7eb",
       },
 
       width: {
-        18: "4.5rem",
+        18: "4.5rem", // 기존 ts 파일 내용
       },
       height: {
-        18: "4.5rem",
+        18: "4.5rem", // 기존 ts 파일 내용
       },
 
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "var(--radius)", // 기존 ts 파일 내용
+        md: "calc(var(--radius) - 2px)", // 기존 ts 파일 내용
+        sm: "calc(var(--radius) - 4px)", // 기존 ts 파일 내용
       },
+
+      // js 파일에서 가져온 boxShadow 추가
+      boxShadow: {
+        "md-custom":
+          "0px 8px 12px -6px rgba(0, 0, 0, 0.16), 0px 12px 16px 0px rgba(0, 0, 0, 0.12), 0px 1px 32px 0px rgba(0, 0, 0, 0.08)",
+      },
+
+      // 기존 ts 파일의 keyframes 및 animation (유지)
       keyframes: {
         "accordion-down": {
           from: {
@@ -112,5 +150,6 @@ export default {
       },
     },
   },
+  // 기존 ts 파일의 plugins (유지)
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

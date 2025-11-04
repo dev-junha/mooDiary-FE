@@ -1,15 +1,82 @@
-// src/pages/HomePage.jsx
+// src/pages/HomePage.tsx
+// (파일 이름은 Write.tsx로 하되, 내부 컴포넌트 이름은 원본을 따름)
 import React, { useState, useRef } from 'react';
 
-// --- 아이콘 컴포넌트 (변경 없음) ---
-const EditIcon = () => ( <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 8H8C6.93913 8 5.92172 8.42143 5.17157 9.17157C4.42143 9.92172 4 10.9391 4 12V40C4 41.0609 4.42143 42.0783 5.17157 42.8284C5.92172 43.5786 6.93913 44 8 44H36C37.0609 44 38.0783 43.5786 38.8284 42.8284C39.5786 42.0783 40 41.0609 40 40V26" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M37 5.00045C37.7956 4.2048 38.8748 3.75781 40 3.75781C41.1252 3.75781 42.2044 4.2048 43 5.00045C43.7956 5.7961 44.2426 6.87523 44.2426 8.00045C44.2426 9.12567 43.7956 10.2048 43 11.0005L24 30.0005L16 32.0005L18 24.0005L37 5.00045Z" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> );
-const ImagePlaceholderIcon = () => ( <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M83.3333 11.5H12.6667C7.30658 11.5 3 15.8066 3 21.1667V74.8333C3 80.1934 7.30658 84.5 12.6667 84.5H83.3333C88.6934 84.5 93 80.1934 93 74.8333V21.1667C93 15.8066 88.6934 11.5 83.3333 11.5Z" stroke="#212121" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/><path d="M34.5 42.333C38.9183 42.333 42.5 38.7513 42.5 34.333C42.5 29.9147 38.9183 26.333 34.5 26.333C30.0817 26.333 26.5 29.9147 26.5 34.333C26.5 38.7513 30.0817 42.333 34.5 42.333Z" stroke="#212121" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/><path d="M88.166 62.833L65.5 40.166L17.833 84.499" stroke="#212121" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg> );
-const SaveIcon = () => ( <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16L21 8V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21Z" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M17 21V13H7V21" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 3V8H15" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> );
-const AnalyzeIcon = () => ( <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M21.0004 21.0004L16.6504 16.6504" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> );
-const CompleteIcon = () => ( <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> );
+// --- 타입 정의 ---
 
-// --- ToggleSwitch (변경 없음) ---
-const ToggleSwitch = ({ name, title, description, checked, onChange }) => (
+// API 응답 타입
+interface SaveDraftResponse {
+  status: string;
+  message: string;
+  draftId: string;
+}
+
+interface EmotionResult {
+  textEmotion: Record<string, number>;
+  faceEmotion: Record<string, number>;
+  combinedEmotion: string;
+}
+
+interface AnalyzeEmotionResponse {
+  status: string;
+  data: EmotionResult;
+}
+
+interface SubmitDiaryResponse {
+  status: string;
+  message: string;
+  diaryId: string;
+}
+
+interface UpdateOptionsResponse {
+  status: string;
+  message: string;
+}
+
+// State 타입
+interface AnalysisOptions {
+  text: boolean;
+  face: boolean;
+  combined: boolean;
+}
+
+interface LoadingState {
+  save: boolean;
+  analyze: boolean;
+  complete: boolean;
+}
+
+// 컴포넌트 Props 타입
+interface ToggleSwitchProps {
+  name: string;
+  title: string;
+  description: string;
+  checked: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+type ButtonVariant = "save" | "analyze" | "complete";
+
+interface ActionButtonProps {
+  type?: "button" | "submit" | "reset";
+  text: string;
+  icon: React.ReactNode;
+  variant?: ButtonVariant;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  disabled?: boolean;
+}
+
+
+// --- 아이콘 컴포넌트 (변경 없음, 타입만 추가) ---
+const EditIcon: React.FC = () => ( <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 8H8C6.93913 8 5.92172 8.42143 5.17157 9.17157C4.42143 9.92172 4 10.9391 4 12V40C4 41.0609 4.42143 42.0783 5.17157 42.8284C5.92172 43.5786 6.93913 44 8 44H36C37.0609 44 38.0783 43.5786 38.8284 42.8284C39.5786 42.0783 40 41.0609 40 40V26" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M37 5.00045C37.7956 4.2048 38.8748 3.75781 40 3.75781C41.1252 3.75781 42.2044 4.2048 43 5.00045C43.7956 5.7961 44.2426 6.87523 44.2426 8.00045C44.2426 9.12567 43.7956 10.2048 43 11.0005L24 30.0005L16 32.0005L18 24.0005L37 5.00045Z" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> );
+const ImagePlaceholderIcon: React.FC = () => ( <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M83.3333 11.5H12.6667C7.30658 11.5 3 15.8066 3 21.1667V74.8333C3 80.1934 7.30658 84.5 12.6667 84.5H83.3333C88.6934 84.5 93 80.1934 93 74.8333V21.1667C93 15.8066 88.6934 11.5 83.3333 11.5Z" stroke="#212121" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/><path d="M34.5 42.333C38.9183 42.333 42.5 38.7513 42.5 34.333C42.5 29.9147 38.9183 26.333 34.5 26.333C30.0817 26.333 26.5 29.9147 26.5 34.333C26.5 38.7513 30.0817 42.333 34.5 42.333Z" stroke="#212121" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/><path d="M88.166 62.833L65.5 40.166L17.833 84.499" stroke="#212121" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg> );
+const SaveIcon: React.FC = () => ( <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16L21 8V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21Z" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M17 21V13H7V21" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 3V8H15" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> );
+const AnalyzeIcon: React.FC = () => ( <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#212122" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M21.0004 21.0004L16.6504 16.6504" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> );
+const CompleteIcon: React.FC = () => ( <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> );
+
+
+// --- ToggleSwitch (Props 타입 적용) ---
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ name, title, description, checked, onChange }) => (
   <div className="flex justify-between items-center border border-border-muted rounded-lg p-4 min-h-[107px] bg-white/50">
     <div className="flex flex-col gap-1">
       <span className="text-lg font-medium text-brand-brown tracking-tight">{title}</span>
@@ -23,14 +90,17 @@ const ToggleSwitch = ({ name, title, description, checked, onChange }) => (
   </div>
 );
 
-// --- ActionButton (변경 없음) ---
-const ActionButton = ({ type = "button", text, icon, variant = "save", onClick, disabled = false }) => {
+// --- ActionButton (Props 타입 적용) ---
+const ActionButton: React.FC<ActionButtonProps> = ({ type = "button", text, icon, variant = "save", onClick, disabled = false }) => {
   const baseStyle = "w-full md:w-auto flex-1 max-w-full md:max-w-[337px] h-[54px] rounded-lg border border-text-dark flex items-center justify-center gap-2.5 text-2xl font-medium tracking-tight cursor-pointer transition-colors";
-  const variants = {
+  
+  // variant 타입을 키로 사용하는 Record 타입으로 변경
+  const variants: Record<ButtonVariant, string> = {
     save: "bg-button-secondary-bg text-text-dark hover:bg-button-secondary-hover",
     analyze: "bg-button-primary-bg text-text-dark hover:bg-button-primary-hover",
     complete: "bg-gray-300 text-text-dark hover:bg-gray-400",
   };
+  
   const disabledStyle = "disabled:bg-gray-200 disabled:text-gray-400 disabled:border-gray-300 disabled:cursor-not-allowed";
 
   return (
@@ -42,76 +112,72 @@ const ActionButton = ({ type = "button", text, icon, variant = "save", onClick, 
 };
 
 
-// --- 더미 API 호출 함수 (변경 없음) ---
-const apiSaveDraft = (formData) => {
+// --- 더미 API 호출 함수 (타입 적용) ---
+const apiSaveDraft = (formData: FormData): Promise<SaveDraftResponse> => {
   console.log("--- API CALL: apiSaveDraft ---");
   for (let [key, value] of formData.entries()) { console.log(`${key}:`, value); }
   return new Promise(resolve => setTimeout(() => resolve({ status: 'success', message: '임시저장 완료', draftId: 'draft-123' }), 1000));
 };
 
-const apiAnalyzeEmotion = (formData) => {
+const apiAnalyzeEmotion = (formData: FormData): Promise<AnalyzeEmotionResponse> => {
   console.log("--- API CALL: apiAnalyzeEmotion ---");
   for (let [key, value] of formData.entries()) { console.log(`${key}:`, value); }
   return new Promise(resolve => setTimeout(() => {
-    const dummyResult = { textEmotion: { "기쁨": 0.7, "슬픔": 0.1, "중립": 0.2 }, faceEmotion: { "행복": 0.8, "놀람": 0.2 }, combinedEmotion: "기쁨 (85%)" };
+    const dummyResult: EmotionResult = { textEmotion: { "기쁨": 0.7, "슬픔": 0.1, "중립": 0.2 }, faceEmotion: { "행복": 0.8, "놀람": 0.2 }, combinedEmotion: "기쁨 (85%)" };
     resolve({ status: 'success', data: dummyResult });
   }, 1500));
 };
 
-const apiSubmitDiary = (formData) => {
+const apiSubmitDiary = (formData: FormData): Promise<SubmitDiaryResponse> => {
   console.log("--- API CALL: apiSubmitDiary ---");
   for (let [key, value] of formData.entries()) { console.log(`${key}:`, value); }
   return new Promise(resolve => setTimeout(() => resolve({ status: 'success', message: '일기 저장 완료', diaryId: 'diary-abc' }), 1000));
 };
 
-/** (더미) 옵션 변경 실시간 API */
-const apiUpdateOptions = (optionName, newValue) => {
+const apiUpdateOptions = (optionName: string, newValue: boolean): Promise<UpdateOptionsResponse> => {
   console.log("--- API CALL: apiUpdateOptions ---");
-  // 어떤 스위치가(optionName) 어떤 값으로(newValue) 변경되었는지 정확히 로그
   console.log(`[옵션 변경] ${optionName} 스위치가 ${newValue ? 'ON' : 'OFF'} (으)로 변경됨`); 
   
   return new Promise(resolve => {
     setTimeout(() => {
-      // 응답 메시지도 더 구체적으로 변경
       const message = `${optionName} 옵션이 ${newValue ? '활성화' : '비활성화'}되었습니다.`;
       resolve({ status: 'success', message: message });
-    }, 500); // 0.5초 딜레이 시뮬레이션
+    }, 500);
   });
 };
 
 
-// --- 메인 페이지 컴포넌트 ---
-function HomePage() {
-  const [diaryContent, setDiaryContent] = useState('');
-  const [imagePreview, setImagePreview] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
-  const fileInputRef = useRef(null);
+// --- 메인 페이지 컴포넌트 (타입 적용) ---
+function NewWrite() { // 원본 컴포넌트 이름 유지
+  const [diaryContent, setDiaryContent] = useState<string>('');
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const [analysisOptions, setAnalysisOptions] = useState({
+  const [analysisOptions, setAnalysisOptions] = useState<AnalysisOptions>({
     text: true,
     face: true,
     combined: true,
   });
   
-  // (수정) isLoading state를 객체로 변경
-  const [loadingState, setLoadingState] = useState({
+  const [loadingState, setLoadingState] = useState<LoadingState>({
     save: false,
     analyze: false,
     complete: false,
   });
   
-  const [emotionPreview, setEmotionPreview] = useState(null);
+  const [emotionPreview, setEmotionPreview] = useState<string | null>(null);
 
   const currentLength = diaryContent.length;
   const minLength = 10;
   const maxLength = 1000;
 
-  // (추가) 셋 중 하나라도 로딩 중인지 확인
   const isAnyLoading = loadingState.save || loadingState.analyze || loadingState.complete;
 
-  const handleImageChange = (e) => {
-    const [file] = e.target.files;
-    if (file) {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // files가 null이 아닐 수 있음을 확인
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
       setImagePreview(URL.createObjectURL(file));
       setImageFile(file);
     } else {
@@ -121,29 +187,32 @@ function HomePage() {
   };
 
   const handleTriggerFileUpload = () => {
-    fileInputRef.current.click();
+    // .current가 null일 수 있으므로 optional chaining 사용
+    fileInputRef.current?.click();
   };
   
-  const handleOptionChange = async (e) => {
+  const handleOptionChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
-    // 1. React state는 이전과 동일하게 전체 객체로 업데이트
+    
+    // name을 AnalysisOptions의 키로 타입 단언
+    const optionName = name as keyof AnalysisOptions;
+
     const newOptions = {
       ...analysisOptions,
-      [name]: checked,
+      [optionName]: checked,
     };
     setAnalysisOptions(newOptions);
   
-    // 2. (수정) API를 호출할 때는 [어떤 스위치(name)]가 [어떤 값(checked)]으로 변했는지 명시
     try {
+      // API 호출 시에는 문자열 'name' 사용
       const response = await apiUpdateOptions(name, checked);
-      // API가 돌려준 구체적인 메시지 (예: "text 옵션이 활성화되었습니다.")를 로그
       console.log(response.message); 
     } catch (error) {
       console.error("옵션 실시간 업데이트 실패:", error);
     }
   };
 
-  const createDiaryFormData = () => {
+  const createDiaryFormData = (): FormData => {
     const formData = new FormData();
     formData.append('diaryContent', diaryContent);
     if (imageFile) {
@@ -153,10 +222,9 @@ function HomePage() {
     return formData;
   };
 
-  // (수정) 임시저장 버튼 핸들러
   const handleSave = async () => {
     console.log("임시저장 클릭");
-    setLoadingState(prev => ({ ...prev, save: true })); // 'save'만 true
+    setLoadingState(prev => ({ ...prev, save: true }));
     setEmotionPreview(null);
 
     try {
@@ -168,14 +236,13 @@ function HomePage() {
       console.error("임시저장 실패:", error);
       alert("저장에 실패했습니다.");
     } finally {
-      setLoadingState(prev => ({ ...prev, save: false })); // 'save'만 false
+      setLoadingState(prev => ({ ...prev, save: false }));
     }
   };
 
-  // (수정) 분석 시작 버튼 핸들러
   const handleAnalyze = async () => {
     console.log("분석 시작 클릭");
-    setLoadingState(prev => ({ ...prev, analyze: true })); // 'analyze'만 true
+    setLoadingState(prev => ({ ...prev, analyze: true }));
     setEmotionPreview("분석 중...");
 
     try {
@@ -195,11 +262,10 @@ function HomePage() {
       setEmotionPreview("분석에 실패했습니다.");
       alert("분석에 실패했습니다.");
     } finally {
-      setLoadingState(prev => ({ ...prev, analyze: false })); // 'analyze'만 false
+      setLoadingState(prev => ({ ...prev, analyze: false }));
     }
   };
 
-  // (수정) 완료 버튼 핸들러
   const handleComplete = async () => {
     console.log("완료 클릭");
     if (currentLength < minLength) {
@@ -207,7 +273,7 @@ function HomePage() {
       return;
     }
     
-    setLoadingState(prev => ({ ...prev, complete: true })); // 'complete'만 true
+    setLoadingState(prev => ({ ...prev, complete: true }));
     setEmotionPreview(null);
 
     try {
@@ -220,7 +286,7 @@ function HomePage() {
       console.error("제출 실패:", error);
       alert("제출에 실패했습니다.");
     } finally {
-      setLoadingState(prev => ({ ...prev, complete: false })); // 'complete'만 false
+      setLoadingState(prev => ({ ...prev, complete: false }));
     }
   };
 
@@ -240,7 +306,8 @@ function HomePage() {
         </section>
 
         {/* === 일기 작성 폼 === */}
-        <form onSubmit={(e) => e.preventDefault()}>
+        {/* form 이벤트 타입 추가 */}
+        <form onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()}>
           <section className="w-full max-w-5xl mx-auto flex flex-col gap-5">
             <div className="flex items-center gap-3">
               <EditIcon />
@@ -348,7 +415,7 @@ function HomePage() {
             </div>
           </section>
 
-          {/* === 액션 버튼 (수정: text와 disabled prop을 개별 loadingState에 연결) === */}
+          {/* === 액션 버튼 === */}
           <section className="w-full max-w-6xl mx-auto mt-8 border border-border-muted rounded-lg p-6 bg-white/30">
             <h3 className="text-2xl font-medium text-text-dark capitalize tracking-tight mb-6">
               액션 버튼
@@ -389,4 +456,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default NewWrite;
