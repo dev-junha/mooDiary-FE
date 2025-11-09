@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import Main from "@/pages/Main";
 import NotFound from "@/pages/NotFound";
-import WriteEdit from "@/pages/WriteEdit";
 import Results from "@/pages/Results";
 import Bookmark from "@/pages/Bookmark";
 import Profile from "@/pages/Profile";
@@ -16,16 +15,18 @@ import RecMovie from "@/pages/RecMovie";
 import RecMusic from "@/pages/RecMusic";
 import RecPoem from "@/pages/RecPoem";
 import RecPhrase from "@/pages/RecPhrase";
-import NewWrite from "@/pages/NewWrite";
+import WriteEdit from "@/pages/WriteEdit";
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Onboarding from './pages/Onboarding'
 
 const queryClient = new QueryClient();
 const App = () => (
-  <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>  
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Main />} />
         <Route path="/write" element={<WriteEdit />} />
-        <Route path="/new_write" element={<NewWrite />} />
         <Route path="/results" element={<Results />} />
         <Route path="/bookmark" element={<Bookmark />} />
         <Route path="/profile" element={<Profile />} />
@@ -37,6 +38,9 @@ const App = () => (
         <Route path="/poem" element={<RecPoem />} />
         <Route path="/phrase" element={<RecPhrase />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/login"  element={<Login />}/>
+        <Route path="/register"  element={<Register />}/>
+        <Route path="/onboarding"  element={<Onboarding />}/>
       </Routes>
     </BrowserRouter>
   </QueryClientProvider>

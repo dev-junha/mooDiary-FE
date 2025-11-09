@@ -3,7 +3,13 @@ import Placeholder from "@/components/Placeholder";
 import Header from "@/components/layout/Header";
 import Frame from "@/components/ui/frame";
 import basicBookImg from "@/assets/basicBookImg.png";
-import { getEmotionData, getBookRecommendation, getMovieRecommendation, getMusicRecommendation, getPoemRecommendation } from "@/api/api";
+import {
+  getEmotionData,
+  getBookRecommendation,
+  getMovieRecommendation,
+  getMusicRecommendation,
+  getPoemRecommendation,
+} from "@/api/api";
 // 타입 정의
 interface EmotionData {
   emotion?: string;
@@ -26,19 +32,22 @@ interface Category {
 }
 
 // 카테고리별 추천 API 매핑
-const recommendationApis: Record<string, () => Promise<Recommendation | null>> = {
-  book: getBookRecommendation,
-  movie: getMovieRecommendation,
-  music: getMusicRecommendation,
-  poem: getPoemRecommendation,
-};
+const recommendationApis: Record<string, () => Promise<Recommendation | null>> =
+  {
+    book: getBookRecommendation,
+    movie: getMovieRecommendation,
+    music: getMusicRecommendation,
+    poem: getPoemRecommendation,
+  };
 
 export default function RecBook() {
   const [emotionData, setEmotionData] = useState<EmotionData | null>(null); // 오타 수정
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("book");
-  const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
+  const [recommendation, setRecommendation] = useState<Recommendation | null>(
+    null,
+  );
   const [recommendLoading, setRecommendLoading] = useState<boolean>(false);
 
   // 감정 데이터 로드
@@ -75,12 +84,15 @@ export default function RecBook() {
       setRecommendation(data ?? null);
     } catch (error: any) {
       console.error(`추천 콘텐츠 로드 실패 (${category}):`, error);
-      setError(error.message || `추천 콘텐츠를 불러오지 못했습니다: ${category}`);
+      setError(
+        error.message || `추천 콘텐츠를 불러오지 못했습니다: ${category}`,
+      );
       setRecommendation(null);
     } finally {
       setRecommendLoading(false);
     }
   };
+
   const categories: Category[] = [
     { id: "book", label: "책", icon: "📚" },
     { id: "movie", label: "영화", icon: "🎬" },
@@ -116,8 +128,8 @@ export default function RecBook() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <p className="text-red-600">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-[#8E573E] text-white rounded-lg hover:bg-[#7D4D37]"
           >
             다시 시도
@@ -133,7 +145,7 @@ export default function RecBook() {
         <Frame />
         <div className="flex flex-col flex-1">
           <Header />
-          
+
           {/* 메인 콘텐츠 */}
           <section className="flex flex-col items-center mt-12 max-w-[1021px] mx-auto">
             {/* 타이틀 섹션 */}
@@ -156,29 +168,41 @@ export default function RecBook() {
             </div>
 
             {/* 감정 표시 섹션 */}
-            <div className={`flex flex-col justify-center items-center w-full max-w-[915px] h-[323px] rounded-lg p-6 shadow-lg mb-8 ${
-              emotionData?.temperature === "따뜻함" 
-                ? "bg-gradient-to-br from-green-100 via-emerald-100 to-teal-100 border border-green-200"
-                : "bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 border border-purple-200"
-            }`}>
+            <div
+              className={`flex flex-col justify-center items-center w-full max-w-[915px] h-[323px] rounded-lg p-6 shadow-lg mb-8 ${
+                emotionData?.temperature === "따뜻함"
+                  ? "bg-gradient-to-br from-green-100 via-emerald-100 to-teal-100 border border-green-200"
+                  : "bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 border border-purple-200"
+              }`}
+            >
               {emotionData ? (
                 <>
                   <div className="flex flex-col items-center mb-6">
-                    <div className="text-6xl mb-2">{emotionData.emoji || "😊"}</div>
+                    <div className="text-6xl mb-2">
+                      {emotionData.emoji || "😊"}
+                    </div>
                     <h3 className="text-2xl font-semibold text-gray-800">
                       오늘의 감정: {emotionData.emotion || "알 수 없음"}
                     </h3>
-                    <p className="text-gray-600 mt-1">{emotionData.description || "감정 데이터를 불러오는 중입니다."}</p>
+                    <p className="text-gray-600 mt-1">
+                      {emotionData.description ||
+                        "감정 데이터를 불러오는 중입니다."}
+                    </p>
                   </div>
                   <div className="text-center">
                     <p className="text-gray-700 text-lg">
-                      "{emotionData.description || "오늘의 감정을 분석 중입니다."}"
+                      "
+                      {emotionData.description ||
+                        "오늘의 감정을 분석 중입니다."}
+                      "
                     </p>
                   </div>
                 </>
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-500">감정 데이터를 불러오는 중입니다...</p>
+                  <p className="text-gray-500">
+                    감정 데이터를 불러오는 중입니다...
+                  </p>
                 </div>
               )}
             </div>
@@ -206,7 +230,9 @@ export default function RecBook() {
             {recommendLoading ? (
               <div className="mt-8 flex items-center justify-center w-full max-w-[915px]">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8E573E]"></div>
-                <span className="ml-2 text-gray-600">추천을 불러오는 중입니다...</span>
+                <span className="ml-2 text-gray-600">
+                  추천을 불러오는 중입니다...
+                </span>
               </div>
             ) : recommendation ? (
               <div className="w-full max-w-[930px] bg-gradient-to-b from-[#FFFBF2] to-[#FFF3D7] p-6 rounded-lg shadow-lg">
@@ -220,9 +246,9 @@ export default function RecBook() {
                           오늘의 추천 도서
                         </h3>
                       </div>
-                      <img 
-                        src={recommendation.imageUrl || basicBookImg} 
-                        alt={`책 표지: ${recommendation.title || "추천 도서"}`} 
+                      <img
+                        src={recommendation.imageUrl || basicBookImg}
+                        alt={`책 표지: ${recommendation.title || "추천 도서"}`}
                         className="w-[272px] h-[347px] object-cover rounded-lg shadow-md mx-auto"
                       />
                       <div className="mt-4">
@@ -243,22 +269,32 @@ export default function RecBook() {
                         </h3>
                       </div>
                       <p className="text-base text-[#7D4D37] leading-relaxed">
-                        {recommendation.content || "이 작품은 당신의 감정을 더욱 풍부하게 만들어줄 것입니다."}
+                        {recommendation.content ||
+                          "이 작품은 당신의 감정을 더욱 풍부하게 만들어줄 것입니다."}
                       </p>
                     </div>
                   </div>
                 ) : (
                   <div className="w-full p-6 bg-gradient-to-br from-white to-[#F8EFA9] rounded-lg shadow-md">
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-2xl">{categories.find(cat => cat.id === selectedCategory)?.icon}</span>
+                      <span className="text-2xl">
+                        {
+                          categories.find((cat) => cat.id === selectedCategory)
+                            ?.icon
+                        }
+                      </span>
                       <h3 className="text-xl font-semibold text-[#7D4D37]">
-                        추천 {categories.find(cat => cat.id === selectedCategory)?.label}
+                        추천{" "}
+                        {
+                          categories.find((cat) => cat.id === selectedCategory)
+                            ?.label
+                        }
                       </h3>
                     </div>
                     {recommendation.imageUrl && (
-                      <img 
-                        src={recommendation.imageUrl} 
-                        alt={`추천 ${selectedCategory}: ${recommendation.title || "추천 콘텐츠"}`} 
+                      <img
+                        src={recommendation.imageUrl}
+                        alt={`추천 ${selectedCategory}: ${recommendation.title || "추천 콘텐츠"}`}
                         className="w-[272px] h-[347px] object-cover rounded-lg shadow-md mx-auto mb-4"
                       />
                     )}
@@ -266,7 +302,8 @@ export default function RecBook() {
                       제목: {recommendation.title || "알 수 없음"}
                     </p>
                     <p className="text-base text-[#7D4D37] mt-1 leading-relaxed">
-                      {recommendation.content || "추천 콘텐츠가 준비되었습니다."}
+                      {recommendation.content ||
+                        "추천 콘텐츠가 준비되었습니다."}
                     </p>
                   </div>
                 )}
