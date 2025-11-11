@@ -9,7 +9,7 @@ import {
   createMovieRecommendation,
   createMusicRecommendation,
   createPoemRecommendation,
-} from "@/api/api";
+} from "@/lib/apiClient";
 
 // 타입 정의
 interface EmotionData {
@@ -19,10 +19,10 @@ interface EmotionData {
   temperature?: string;
 }
 interface Recommendation {
-  imageUrl: string | null;
+  imageUrl?: string | null;
   title: string;
   content: string;
-  contentId: string | null;
+  contentId?: string | null;
   author?: string;
 }
 interface Category {

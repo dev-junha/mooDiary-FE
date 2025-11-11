@@ -38,11 +38,15 @@ export default function Index() {
   return (
     <div className="flex justify-center bg-white w-full" style={{ fontFamily: "Inter, sans-serif" }}>
       <div className="w-[1217px] h-[1980px] flex flex-col">
-        <section className="flex flex-1">
+        <section 
+          className="flex flex-1 h-full"
+        >
           <Frame />
-          <div className="flex flex-col flex-1">
+          <div 
+            className="mt-16 flex flex-col flex-1 h-[1900px]"
+            style={{ background: 'linear-gradient(90deg, #FFEAB1 7.55%, #FFDED3 121.31%)' }}
+          >
             <Header />
-
             {/* 메인 섹션 */}
             <section className="mt-24 flex flex-col justify-center items-center flex-1">
               <div>

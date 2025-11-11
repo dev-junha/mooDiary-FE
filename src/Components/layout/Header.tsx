@@ -43,7 +43,7 @@ export default function Header() {
 
 
   return (
-    <header className="sticky mt-24 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky mt-12 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container w-full flex h-[153px] items-center px-4 sm:px-6 border items-center justify-around">
         <a 
           href="/"
