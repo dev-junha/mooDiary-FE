@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Image as ImageIcon } from "lucide-react";
 import Frame from "../components/ui/frame";
 import Header from "../components/layout/Header";
-import { useState, useEffect, useRef } from "react";
 import writeBgImg from "../assets/writeBgImg.png";
+import { useState, useEffect, useRef } from "react";
 import recordBg from "../assets/recordBg.png";
 import { useNavigate } from "react-router-dom";
 
@@ -36,11 +36,8 @@ export default function Index() {
   }, []);
 
   return (
-    <div
-      className="w-[1217px] h-[1980px] flex flex-col items-center bg-white"
-      style={{ fontFamily: "Inter, sans-serif" }}
-    >
-      <div className="max-w-[1021px] w-full h-full flex flex-col">
+    <div className="flex justify-center bg-white w-full" style={{ fontFamily: "Inter, sans-serif" }}>
+      <div className="w-[1217px] h-[1980px] flex flex-col">
         <section className="flex flex-1">
           <Frame />
           <div className="flex flex-col flex-1">
@@ -92,7 +89,7 @@ export default function Index() {
                   최근 일기 기록
                 </h2>
               </div>
-              <div className="w-full flex justify-center items-center gap-8 mt-16 flex-wrap">
+              <div className="w-full max-w-[700px] mx-auto flex justify-center items-center gap-8 mt-16 flex-wrap">
                 {recent.map((entry, index) => (
                   <div
                     key={index}

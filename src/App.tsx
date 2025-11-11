@@ -16,13 +16,13 @@ import RecMusic from "@/pages/RecMusic";
 import RecPoem from "@/pages/RecPoem";
 import RecPhrase from "@/pages/RecPhrase";
 import WriteEdit from "@/pages/WriteEdit";
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Onboarding from './pages/Onboarding'
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Onboarding from "./pages/Onboarding";
 
 const queryClient = new QueryClient();
 const App = () => (
-  <QueryClientProvider client={queryClient}>  
+  <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Main />} />
@@ -38,9 +38,9 @@ const App = () => (
         <Route path="/poem" element={<RecPoem />} />
         <Route path="/phrase" element={<RecPhrase />} />
         <Route path="*" element={<NotFound />} />
-        <Route path="/login"  element={<Login />}/>
-        <Route path="/register"  element={<Register />}/>
-        <Route path="/onboarding"  element={<Onboarding />}/>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/onboarding" element={<Onboarding />} />
       </Routes>
     </BrowserRouter>
   </QueryClientProvider>

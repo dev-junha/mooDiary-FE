@@ -5,11 +5,12 @@ import Frame from "@/components/ui/frame";
 import basicBookImg from "@/assets/basicBookImg.png";
 import {
   getEmotionData,
-  getBookRecommendation,
-  getMovieRecommendation,
-  getMusicRecommendation,
-  getPoemRecommendation,
+  createBookRecommendation,
+  createMovieRecommendation,
+  createMusicRecommendation,
+  createPoemRecommendation,
 } from "@/api/api";
+
 // 타입 정의
 interface EmotionData {
   emotion?: string;
@@ -31,17 +32,8 @@ interface Category {
   disabled?: boolean;
 }
 
-// 카테고리별 추천 API 매핑
-const recommendationApis: Record<string, () => Promise<Recommendation | null>> =
-  {
-    book: getBookRecommendation,
-    movie: getMovieRecommendation,
-    music: getMusicRecommendation,
-    poem: getPoemRecommendation,
-  };
-
 export default function RecBook() {
-  const [emotionData, setEmotionData] = useState<EmotionData | null>(null); // 오타 수정
+  const [emotionData, setEmotionData] = useState<EmotionData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("book");
@@ -50,16 +42,16 @@ export default function RecBook() {
   );
   const [recommendLoading, setRecommendLoading] = useState<boolean>(false);
 
-  // 감정 데이터 로드
+  // 감정 데이터 로드 (axios api 사용)
   useEffect(() => {
     const loadEmotionData = async () => {
       try {
         setLoading(true);
         const data = await getEmotionData();
         setEmotionData(data || null);
-      } catch (error: any) {
-        console.error("감정 데이터 로드 실패:", error);
-        setError(error.message || "감정 데이터를 불러오지 못했습니다.");
+      } catch (err: any) {
+        console.error("감정 데이터 로드 실패:", err);
+        setError(err.message || "감정 데이터를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -68,25 +60,34 @@ export default function RecBook() {
     loadEmotionData();
   }, []);
 
+  // 카테고리 -> API 매핑
+  const recommendationApiMap: Record<
+    string,
+    () => Promise<Recommendation | null>
+  > = {
+    book: async () => (await createBookRecommendation()) ?? null,
+    movie: async () => (await createMovieRecommendation()) ?? null,
+    music: async () => (await createMusicRecommendation()) ?? null,
+    poem: async () => (await createPoemRecommendation()) ?? null,
+    quote: async () => null,
+  };
+
   // 추천 콘텐츠 로드
   const handleCategorySelect = async (category: string) => {
     if (selectedCategory === category && recommendation) return;
 
     setSelectedCategory(category);
     setRecommendLoading(true);
+    setError(null);
 
     try {
-      const api = recommendationApis[category];
-      if (!api) {
-        throw new Error(`지원되지 않는 카테고리입니다: ${category}`);
-      }
-      const data = await api();
-      setRecommendation(data ?? null);
-    } catch (error: any) {
-      console.error(`추천 콘텐츠 로드 실패 (${category}):`, error);
-      setError(
-        error.message || `추천 콘텐츠를 불러오지 못했습니다: ${category}`,
-      );
+      const loader = recommendationApiMap[category];
+      if (!loader) throw new Error("해당 카테고리의 추천 API가 없습니다.");
+      const data = await loader();
+      setRecommendation(data);
+    } catch (err: any) {
+      console.error(`추천 콘텐츠 로드 실패 (${category}):`, err);
+      setError(err.message || `추천 콘텐츠를 불러오지 못했습니다: ${category}`);
       setRecommendation(null);
     } finally {
       setRecommendLoading(false);
@@ -98,7 +99,7 @@ export default function RecBook() {
     { id: "movie", label: "영화", icon: "🎬" },
     { id: "music", label: "음악", icon: "🎵" },
     { id: "poem", label: "시", icon: "📜" },
-    { id: "quote", label: "명언", icon: "💭", disabled: true }, // 명언 비활성화
+    { id: "quote", label: "명언", icon: "💭", disabled: true },
   ];
 
   const getCategoryColor = (category: string): string => {
