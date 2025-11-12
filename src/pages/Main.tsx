@@ -22,11 +22,19 @@ export default function Index() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch("/api/user/userdata");
+        const response = await fetch("/api/user/userdata", { credentials: 'include' });
         if (response.ok) {
-          const data = await response.json();
-          setNickname(data.nickname || "사용자");
-          setEmotion(data.recentEmotion || "행복함");
+          const ct = response.headers.get("content-type") || "";
+          if (ct.includes("application/json")) {
+            const data = await response.json();
+            setNickname(data.nickname || "사용자");
+            setEmotion(data.recentEmotion || "행복함");
+          } else {
+            const text = await response.text();
+            console.error("사용자 API: JSON 아닌 응답을 받음", { status: response.status, url: response.url, bodyPreview: text.slice(0, 300) });
+          }
+        } else {
+          console.warn("사용자 API 비정상 응답:", response.status, response.url);
         }
       } catch (error) {
         console.error("사용자 데이터 로드 실패:", error);

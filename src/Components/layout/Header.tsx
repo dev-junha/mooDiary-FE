@@ -27,11 +27,20 @@ export default function Header() {
   useEffect(() => {
     const fetchProfileData = async () =>{
       try{
-        const response = await fetch("/api/user/nickname"); // 가정: 사용자 닉네임 API
-        if(response.ok){
-          const data = await response.json();
-          setProfileImage(data.avatarUrl || defaultImg); // 프로필 이미지 설정
-          setNickname(data.nickname || "사용자"); // 닉네임 설정
+        const response = await fetch("/api/user/nickname", { credentials: 'include' }); // 가정: 사용자 닉네임 API
+        if (response.ok) {
+          const ct = response.headers.get("content-type") || "";
+          if (ct.includes("application/json")) {
+            const data = await response.json();
+            setProfileImage(data.avatarUrl || defaultImg); // 프로필 이미지 설정
+            setNickname(data.nickname || "사용자"); // 닉네임 설정
+          } else {
+            // 서버가 인증 페이지(HTML)를 돌려주는 등 JSON이 아닌 응답을 받을 때 안전하게 로그를 남김
+            const text = await response.text();
+            console.error("프로필 API: JSON 아닌 응답을 받음", { status: response.status, url: response.url, bodyPreview: text.slice(0, 300) });
+          }
+        } else {
+          console.warn("프로필 API 비정상 응답:", response.status, response.url);
         }
       } catch (error){
         console.error("프로필 데이터 로드 실패:", error);
@@ -75,13 +84,13 @@ export default function Header() {
 
         <div>
           <button className="w-14 h-14 rounded ml-4 mt-4">
-            <img src={defaultImg} alt="프로필 이미지" className="h-full w-full object-contain" />
+            <img src={profileImage} alt="프로필 이미지" className="h-full w-full object-contain" />
             <span className="text-[12px] whitespace-nowrap">안녕하세요, {nickName}님</span>
           </button>
         </div>
 
         <div>
-          <button className="w-[104px] h-[35px] border rounded-sm ml-4" onClick={() => navigate("/login")}>
+          <button className="w-[104px] h-[35px] border rounded-sm ml-4" onClick={() => navigate("/login")}> 
             Logout
           </button>
         </div>

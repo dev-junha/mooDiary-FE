@@ -141,182 +141,153 @@ export default function RecBook() {
   }
 
   return (
-    <div className="max-w-[1217px] min-h-screen container px-4 sm:px-6 py-8 mx-auto bg-gray-50">
-      <section className="flex gap-6">
-        <Frame />
-        <div className="flex flex-col flex-1">
-          <Header />
+    <div className="flex justify-center bg-white w-full" style={{ fontFamily: "Inter, sans-serif" }}>
+      <div className="w-[1217px] h-[1980px] flex flex-col">
+        <section className="flex flex-1 h-full">
+          <Frame />
+          <div className="mt-16 flex flex-col flex-1 h-[1900px]" style={{ background: 'linear-gradient(90deg, #FFEAB1 7.55%, #FFDED3 121.31%)' }}>
+            <Header />
 
-          {/* 메인 콘텐츠 */}
-          <section className="flex flex-col items-center mt-12 max-w-[1021px] mx-auto">
-            {/* 타이틀 섹션 */}
-            <div className="text-center mb-12">
-              <div className="flex justify-center">
-                <span className="text-5xl font-['jsMath-cmti10'] text-[#8E573E] font-normal">
-                  mooDiary
-                </span>
-              </div>
-              <div className="flex justify-center mt-6">
-                <span className="text-2xl font-normal font-['Inter'] text-[#8E573E]">
-                  당신의 감정에 맞는 특별한 추천
-                </span>
-              </div>
-              <div className="flex justify-center mt-2">
-                <span className="text-lg font-['Inter'] text-[#FDA54E] max-w-2xl">
-                  AI가 분석한 감정을 바탕으로 책, 영화, 음악 등을 추천해드려요!
-                </span>
-              </div>
-            </div>
-
-            {/* 감정 표시 섹션 */}
-            <div
-              className={`flex flex-col justify-center items-center w-full max-w-[915px] h-[323px] rounded-lg p-6 shadow-lg mb-8 ${
-                emotionData?.temperature === "따뜻함"
-                  ? "bg-gradient-to-br from-green-100 via-emerald-100 to-teal-100 border border-green-200"
-                  : "bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 border border-purple-200"
-              }`}
-            >
-              {emotionData ? (
-                <>
-                  <div className="flex flex-col items-center mb-6">
-                    <div className="text-6xl mb-2">
-                      {emotionData.emoji || "😊"}
-                    </div>
-                    <h3 className="text-2xl font-semibold text-gray-800">
-                      오늘의 감정: {emotionData.emotion || "알 수 없음"}
-                    </h3>
-                    <p className="text-gray-600 mt-1">
-                      {emotionData.description ||
-                        "감정 데이터를 불러오는 중입니다."}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-gray-700 text-lg">
-                      "
-                      {emotionData.description ||
-                        "오늘의 감정을 분석 중입니다."}
-                      "
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-500">
-                    감정 데이터를 불러오는 중입니다...
-                  </p>
+            {/* 메인 콘텐츠 */}
+            <section className="flex flex-col items-center mt-12 max-w-[1021px] mx-auto">
+              {/* 타이틀 섹션 */}
+              <div className="text-center mb-12">
+                <div className="flex justify-center">
+                  <span className="text-5xl font-['jsMath-cmti10'] text-[#8E573E] font-normal">
+                    mooDiary
+                  </span>
                 </div>
-              )}
-            </div>
-
-            {/* 카테고리 버튼들 */}
-            <div className="flex flex-wrap justify-center gap-4 w-full max-w-[915px] mb-8">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategorySelect(category.id)}
-                  disabled={recommendLoading || category.disabled}
-                  className={`flex items-center gap-3 px-6 py-3 rounded-full font-medium text-white shadow-lg transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-w-[140px] ${
-                    selectedCategory === category.id
-                      ? `bg-gradient-to-r ${getCategoryColor(category.id)}`
-                      : "bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700"
-                  }`}
-                >
-                  <span className="text-xl">{category.icon}</span>
-                  <span>{category.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* 추천 콘텐츠 표시 영역 */}
-            {recommendLoading ? (
-              <div className="mt-8 flex items-center justify-center w-full max-w-[915px]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8E573E]"></div>
-                <span className="ml-2 text-gray-600">
-                  추천을 불러오는 중입니다...
-                </span>
+                <div className="flex justify-center mt-6">
+                  <span className="text-2xl font-normal font-['Inter'] text-[#8E573E]">
+                    당신의 감정에 맞는 특별한 추천
+                  </span>
+                </div>
+                <div className="flex justify-center mt-2">
+                  <span className="text-lg font-['Inter'] text-[#FDA54E] max-w-2xl">
+                    AI가 분석한 감정을 바탕으로 책, 영화, 음악 등을 추천해드려요!
+                  </span>
+                </div>
               </div>
-            ) : recommendation ? (
-              <div className="w-full max-w-[930px] bg-gradient-to-b from-[#FFFBF2] to-[#FFF3D7] p-6 rounded-lg shadow-lg">
-                {selectedCategory === "book" ? (
-                  <div className="flex flex-col md:flex-row gap-6">
-                    {/* 추천 도서 섹션 */}
-                    <div className="flex-1 bg-gradient-to-br from-white to-[#F8EFA9] p-6 rounded-lg shadow-md">
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="text-2xl">📚</span>
-                        <h3 className="text-xl font-semibold text-[#7D4D37]">
-                          오늘의 추천 도서
-                        </h3>
+
+              {/* 감정 표시 섹션 */}
+              <div
+                className={`flex flex-col justify-center items-center w-full max-w-[915px] h-[323px] rounded-lg p-6 shadow-lg mb-8 ${
+                  emotionData?.temperature === "따뜻함"
+                    ? "bg-gradient-to-br from-green-100 via-emerald-100 to-teal-100 border border-green-200"
+                    : "bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 border border-purple-200"
+                }`}
+              >
+                {emotionData ? (
+                  <>
+                    <div className="flex flex-col items-center mb-6">
+                      <div className="text-6xl mb-2">
+                        {emotionData.emoji || "😊"}
                       </div>
-                      <img
-                        src={recommendation.imageUrl || basicBookImg}
-                        alt={`책 표지: ${recommendation.title || "추천 도서"}`}
-                        className="w-[272px] h-[347px] object-cover rounded-lg shadow-md mx-auto"
-                      />
-                      <div className="mt-4">
-                        <p className="text-lg font-semibold text-[#7D4D37]">
-                          제목: {recommendation.title || "알 수 없음"}
-                        </p>
-                        <p className="text-base text-[#7D4D37] mt-1">
-                          저자: {recommendation.author || "알 수 없음"}
-                        </p>
-                      </div>
-                    </div>
-                    {/* 작품 설명 섹션 */}
-                    <div className="flex-1 bg-gradient-to-br from-white to-[#F8EFA9] p-6 rounded-lg shadow-md">
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="text-2xl">📝</span>
-                        <h3 className="text-xl font-semibold text-[#7D4D37]">
-                          작품 설명
-                        </h3>
-                      </div>
-                      <p className="text-base text-[#7D4D37] leading-relaxed">
-                        {recommendation.content ||
-                          "이 작품은 당신의 감정을 더욱 풍부하게 만들어줄 것입니다."}
+                      <h3 className="text-2xl font-semibold text-gray-800">
+                        오늘의 감정: {emotionData.emotion || "알 수 없음"}
+                      </h3>
+                      <p className="text-gray-600 mt-1">
+                        {emotionData.description ||
+                          "감정 데이터를 불러오는 중입니다."}
                       </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="w-full p-6 bg-gradient-to-br from-white to-[#F8EFA9] rounded-lg shadow-md">
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-2xl">
-                        {
-                          categories.find((cat) => cat.id === selectedCategory)
-                            ?.icon
-                        }
-                      </span>
-                      <h3 className="text-xl font-semibold text-[#7D4D37]">
-                        추천{" "}
-                        {
-                          categories.find((cat) => cat.id === selectedCategory)
-                            ?.label
-                        }
-                      </h3>
+                    <div className="text-center">
+                      <p className="text-gray-700 text-lg">
+                        "
+                        {emotionData.description ||
+                          "오늘의 감정을 분석 중입니다."}
+                        "
+                      </p>
                     </div>
-                    {recommendation.imageUrl && (
-                      <img
-                        src={recommendation.imageUrl}
-                        alt={`추천 ${selectedCategory}: ${recommendation.title || "추천 콘텐츠"}`}
-                        className="w-[272px] h-[347px] object-cover rounded-lg shadow-md mx-auto mb-4"
-                      />
-                    )}
-                    <p className="text-lg font-semibold text-[#7D4D37]">
-                      제목: {recommendation.title || "알 수 없음"}
-                    </p>
-                    <p className="text-base text-[#7D4D37] mt-1 leading-relaxed">
-                      {recommendation.content ||
-                        "추천 콘텐츠가 준비되었습니다."}
-                    </p>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500">감정 데이터를 불러오는 중입니다...</p>
                   </div>
                 )}
               </div>
-            ) : (
-              <div className="w-full max-w-[915px] p-6 bg-white rounded-lg shadow-lg">
-                <p className="text-gray-500">추천 콘텐츠를 선택해주세요.</p>
+
+              {/* 카테고리 버튼들 */}
+              <div className="flex flex-wrap justify-center gap-4 w-full max-w-[915px] mb-8">
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategorySelect(category.id)}
+                    disabled={recommendLoading || category.disabled}
+                    className={`flex items-center gap-3 px-6 py-3 rounded-full font-medium text-white shadow-lg transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-w-[140px] ${
+                      selectedCategory === category.id
+                        ? `bg-gradient-to-r ${getCategoryColor(category.id)}`
+                        : "bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700"
+                    }`}
+                  >
+                    <span className="text-xl">{category.icon}</span>
+                    <span>{category.label}</span>
+                  </button>
+                ))}
               </div>
-            )}
-          </section>
-        </div>
-      </section>
+
+              {/* 추천 콘텐츠 표시 영역 */}
+              {recommendLoading ? (
+                <div className="mt-8 flex items-center justify-center w-full max-w-[915px]">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8E573E]"></div>
+                  <span className="ml-2 text-gray-600">추천을 불러오는 중입니다...</span>
+                </div>
+              ) : recommendation ? (
+                <div className="w-full max-w-[930px] bg-gradient-to-b from-[#FFFBF2] to-[#FFF3D7] p-6 rounded-lg shadow-lg">
+                  {selectedCategory === "book" ? (
+                    <div className="flex flex-col md:flex-row gap-6">
+                      {/* 추천 도서 섹션 */}
+                      <div className="flex-1 bg-gradient-to-br from-white to-[#F8EFA9] p-6 rounded-lg shadow-md">
+                        <div className="flex items-center gap-2 mb-4">
+                          <span className="text-2xl">📚</span>
+                          <h3 className="text-xl font-semibold text-[#7D4D37]">오늘의 추천 도서</h3>
+                        </div>
+                        <img
+                          src={recommendation.imageUrl || basicBookImg}
+                          alt={`책 표지: ${recommendation.title || "추천 도서"}`}
+                          className="w-[272px] h-[347px] object-cover rounded-lg shadow-md mx-auto"
+                        />
+                        <div className="mt-4">
+                          <p className="text-lg font-semibold text-[#7D4D37]">제목: {recommendation.title || "알 수 없음"}</p>
+                          <p className="text-base text-[#7D4D37] mt-1">저자: {recommendation.author || "알 수 없음"}</p>
+                        </div>
+                      </div>
+                      {/* 작품 설명 섹션 */}
+                      <div className="flex-1 bg-gradient-to-br from-white to-[#F8EFA9] p-6 rounded-lg shadow-md">
+                        <div className="flex items-center gap-2 mb-4">
+                          <span className="text-2xl">📝</span>
+                          <h3 className="text-xl font-semibold text-[#7D4D37]">작품 설명</h3>
+                        </div>
+                        <p className="text-base text-[#7D4D37] leading-relaxed">{recommendation.content || "이 작품은 당신의 감정을 더욱 풍부하게 만들어줄 것입니다."}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full p-6 bg-gradient-to-br from-white to-[#F8EFA9] rounded-lg shadow-md">
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-2xl">{categories.find((cat) => cat.id === selectedCategory)?.icon}</span>
+                        <h3 className="text-xl font-semibold text-[#7D4D37]">추천 {categories.find((cat) => cat.id === selectedCategory)?.label}</h3>
+                      </div>
+                      {recommendation.imageUrl && (
+                        <img
+                          src={recommendation.imageUrl}
+                          alt={`추천 ${selectedCategory}: ${recommendation.title || "추천 콘텐츠"}`}
+                          className="w-[272px] h-[347px] object-cover rounded-lg shadow-md mx-auto mb-4"
+                        />
+                      )}
+                      <p className="text-lg font-semibold text-[#7D4D37]">제목: {recommendation.title || "알 수 없음"}</p>
+                      <p className="text-base text-[#7D4D37] mt-1 leading-relaxed">{recommendation.content || "추천 콘텐츠가 준비되었습니다."}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="w-full max-w-[915px] p-6 bg-white rounded-lg shadow-lg">
+                  <p className="text-gray-500">추천 콘텐츠를 선택해주세요.</p>
+                </div>
+              )}
+            </section>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
