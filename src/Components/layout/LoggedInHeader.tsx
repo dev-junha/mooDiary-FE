@@ -1,24 +1,11 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Button } from "../ui/button";
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/utils";
 import { Menu, X, PenSquare } from "lucide-react";
+import { NAV_ITEMS } from "@/constants/navigation";
 
-/*
-  이미지 api에서 받아서 넣기 
-*/
-
-const navItems = [
-  { to: "/", label: "Home" },
-  { to: "/write", label: "Write / Edit" },
-  { to: "/results", label: "Results" },
-  { to: "/bookmark", label: "Bookmark" },
-  { to: "/profile", label: "MyProfile" },
-  { to: "/recommendation", label: "Recommendation" },
-  { to : "/mypage", label : "MyPage"},
-];
-
-export default function Header() {
+export default function LoggedInHeader() {
   const [open, setOpen] = useState(false);
 
   return (
@@ -31,7 +18,7 @@ export default function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-20 text-base ml-52">
-          {navItems.map((item) => (
+          {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -73,7 +60,7 @@ export default function Header() {
       {open && (
         <div className="md:hidden border-t bg-white">
           <div className="container mx-auto px-4 py-3 flex flex-col gap-3">
-            {navItems.map((item) => (
+            {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}

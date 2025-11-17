@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import eyeIcon from "../assets/eye.png";
+import { register, AuthError } from "@/lib/auth";
+import { useAuth } from "@/context/AuthContext";
 
 
 const Register: React.FC = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
@@ -13,6 +17,7 @@ const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // ✅ 소셜 로그인 후 이메일 자동 입력
   useEffect(() => {
@@ -34,32 +39,30 @@ const Register: React.FC = () => {
     }
 
     setErrorMessage("");
+    setIsLoading(true);
 
     try {
-      const response = await fetch("http://www.jinwook.shop/api/users/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password,
-          phone,
-          username,
-          nickname: username, // 없으면 username 재사용
-          profileImage: "https://example.com/default-profile.jpg",
-        }),
+      // API 명세서에 맞춰 요청 데이터 구성
+      const userId = await register({
+        email,
+        password,
+        nickname,
+        phone,
+        username,
+        profileImage: profileImage || undefined, // 빈 문자열이면 undefined
       });
 
-      if (response.ok) {
-        alert("회원가입이 완료되었습니다! 🎉");
-        localStorage.removeItem("socialEmail"); // 소셜 이메일 초기화
-        window.location.href = "/login";
-      } else {
-        const errorText = await response.text();
-        setErrorMessage(`회원가입 실패: ${errorText}`);
-      }
+      alert(`회원가입이 완료되었습니다! 🎉 (사용자 ID: ${userId})`);
+      localStorage.removeItem("socialEmail"); // 소셜 이메일 초기화
+      navigate("/login");
     } catch (error) {
       console.error(error);
-      setErrorMessage("서버 연결 중 오류가 발생했습니다.");
+      const message = error instanceof AuthError 
+        ? error.message 
+        : "서버 연결 중 오류가 발생했습니다.";
+      setErrorMessage(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -208,9 +211,10 @@ const Register: React.FC = () => {
 
             <button
               type="submit"
-              className="mt-6 w-full bg-orange-300 text-white font-semibold py-2.5 rounded-md shadow-sm transition hover:bg-orange-400"
+              disabled={isLoading}
+              className="mt-6 w-full bg-orange-300 text-white font-semibold py-2.5 rounded-md shadow-sm transition hover:bg-orange-400 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              mooDiary 계정 생성
+              {isLoading ? "회원가입 중..." : "mooDiary 계정 생성"}
             </button>
 
             <p className="mt-5 text-sm text-gray-600">

@@ -1,63 +1,52 @@
 import React, { useState } from "react";
-import kakaoIcon from "../assets/kakao.png";
-import eyeIcon from "../assets/eye.png";
-
+import { useNavigate } from "react-router-dom";
+import kakaoIcon from "@/assets/kakao.png";
+import eyeIcon from "@/assets/eye.png";
+import { login, saveTokens, getOAuthUrl, AuthError } from "@/lib/auth";
+import { useAuth } from "@/context/AuthContext";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState(""); // username → email 변경
+  const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // 일반 로그인 요청
   const handleLogin = async () => {
     if (!email || !password) {
       alert("이메일과 비밀번호를 모두 입력해주세요.");
       return;
     }
 
+    setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:8080/api/users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`로그인 실패: ${errorText}`);
-      }
-
-      const data = await response.json();
-
-      // 응답 데이터 예시:
-      // {
-      //   "accessToken": "...",
-      //   "refreshToken": "...",
-      //   "tokenType": "Bearer",
-      //   "expiresIn": 86400000
-      // }
-
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
-      localStorage.setItem("tokenType", data.tokenType);
-      localStorage.setItem("expiresIn", data.expiresIn);
-
+      const tokens = await login({ email, password });
+      saveTokens(tokens);
+      authLogin();
       alert("로그인 성공! 🎉");
-      window.location.href = "/"; // 메인 페이지 등으로 이동
+      navigate("/");
     } catch (error) {
       console.error(error);
-      alert("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
+      const message = error instanceof AuthError 
+        ? error.message 
+        : "로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.";
+      alert(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleKakaoLogin = () => {
-    window.location.href = "http://www.jinwook.shop/api/oauth2/authorization/kakao";
+    window.location.href = getOAuthUrl("kakao");
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://www.jinwook.shop/api/oauth2/authorization/google";
+    window.location.href = getOAuthUrl("google");
+  };
+
+  const handleNaverLogin = () => {
+    window.location.href = getOAuthUrl("naver");
   };
     return (
     <>
@@ -136,9 +125,10 @@ const Login: React.FC = () => {
             {/* 로그인 버튼 */}
             <button
               onClick={handleLogin}
-              className="mt-5 w-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-orange-500 text-white font-semibold py-2.5 rounded-md shadow-md transition"
+              disabled={isLoading}
+              className="mt-5 w-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-orange-500 text-white font-semibold py-2.5 rounded-md shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              일기장 열기
+              {isLoading ? "로그인 중..." : "일기장 열기"}
             </button>
 
             {/* 소셜 로그인 구분선 */}
@@ -172,11 +162,34 @@ const Login: React.FC = () => {
               <span>Google 로그인</span>
             </button>
 
+            {/* 네이버 로그인 */}
+            <button
+              onClick={handleNaverLogin}
+              className="w-full bg-[#03C75A] hover:bg-[#02B350] text-white font-semibold py-2.5 rounded-md shadow-sm mt-2 flex items-center justify-center space-x-2"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm5.5 6.5L10 11 4.5 6.5h11z"
+                  fill="white"
+                />
+              </svg>
+              <span>네이버 로그인</span>
+            </button>
+
             <p className="mt-5 text-sm text-gray-600">
               처음 오셨나요?{" "}
-              <span className="text-orange-500 hover:underline cursor-pointer">
+              <button
+                onClick={() => navigate("/register")}
+                className="text-orange-500 hover:underline cursor-pointer"
+              >
                 새 일기장 만들기
-              </span>
+              </button>
             </p>
           </div>
         </div>

@@ -1,7 +1,4 @@
 import { useState, useEffect } from "react";
-import Placeholder from "@/components/Placeholder";
-import Header from "@/components/layout/Header";
-import Frame from "@/components/ui/frame";
 import basicBookImg from "@/assets/basicBookImg.png";
 import {
   getEmotionData,
@@ -10,21 +7,12 @@ import {
   createMusicRecommendation,
   createPoemRecommendation,
 } from "@/lib/apiClient";
+import { CATEGORY_COLORS } from "@/constants/colors";
+import { PageLayout } from "@/components/common/PageLayout";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { ErrorDisplay } from "@/components/common/ErrorDisplay";
+import type { EmotionData, Recommendation } from "@shared/types";
 
-// 타입 정의
-interface EmotionData {
-  emotion?: string;
-  description?: string;
-  emoji?: string;
-  temperature?: string;
-}
-interface Recommendation {
-  imageUrl?: string | null;
-  title: string;
-  content: string;
-  contentId?: string | null;
-  author?: string;
-}
 interface Category {
   id: string;
   label: string;
@@ -47,11 +35,18 @@ export default function RecBook() {
     const loadEmotionData = async () => {
       try {
         setLoading(true);
+        setError(null);
         const data = await getEmotionData();
         setEmotionData(data || null);
       } catch (err: any) {
         console.error("감정 데이터 로드 실패:", err);
-        setError(err.message || "감정 데이터를 불러오지 못했습니다.");
+        
+        // 401 에러인 경우 (인증 실패)
+        if (err?.status === 401) {
+          setError("로그인이 필요합니다. 로그인 페이지로 이동해주세요.");
+        } else {
+          setError(err.message || "감정 데이터를 불러오지 못했습니다.");
+        }
       } finally {
         setLoading(false);
       }
@@ -103,50 +98,31 @@ export default function RecBook() {
   ];
 
   const getCategoryColor = (category: string): string => {
-    const colors: Record<string, string> = {
-      book: "from-blue-500 to-purple-600",
-      movie: "from-red-500 to-pink-600",
-      music: "from-green-500 to-teal-600",
-      poem: "from-indigo-500 to-blue-600",
-      quote: "from-yellow-500 to-orange-600",
-    };
-    return colors[category] || "from-gray-500 to-gray-600";
+    return CATEGORY_COLORS[category] || "from-gray-500 to-gray-600";
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8E573E] mx-auto"></div>
-          <p className="mt-4 text-[#8E573E]">감정 분석 중입니다...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="감정 분석 중입니다..." />;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-red-600">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-[#8E573E] text-white rounded-lg hover:bg-[#7D4D37]"
-          >
-            다시 시도
-          </button>
-        </div>
-      </div>
+      <ErrorDisplay 
+        error={error} 
+        onRetry={() => {
+          // 인증 에러인 경우 로그인 페이지로
+          if (error.includes("로그인")) {
+            window.location.href = "/login";
+          } else {
+            window.location.reload();
+          }
+        }} 
+      />
     );
   }
 
   return (
-    <div className="flex justify-center bg-white w-full" style={{ fontFamily: "Inter, sans-serif" }}>
-      <div className="w-[1217px] h-[1980px] flex flex-col">
-        <section className="flex flex-1 h-full">
-          <Frame />
-          <div className="mt-16 flex flex-col flex-1 h-[1900px]" style={{ background: 'linear-gradient(90deg, #FFEAB1 7.55%, #FFDED3 121.31%)' }}>
-            <Header />
+    <PageLayout>
 
             {/* 메인 콘텐츠 */}
             <section className="flex flex-col items-center mt-12 max-w-[1021px] mx-auto">
@@ -285,9 +261,6 @@ export default function RecBook() {
                 </div>
               )}
             </section>
-          </div>
-        </section>
-      </div>
-    </div>
+    </PageLayout>
   );
 }

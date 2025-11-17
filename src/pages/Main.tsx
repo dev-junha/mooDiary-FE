@@ -1,13 +1,13 @@
-import { Button } from "@/components/ui/button";
-import { Image as ImageIcon } from "lucide-react";
-import Frame from "../components/ui/frame";
-import Header from "../components/layout/Header";
-import writeBgImg from "../assets/writeBgImg.png";
-import { useState, useEffect, useRef } from "react";
-import recordBg from "../assets/recordBg.png";
+import writeBgImg from "@/assets/writeBgImg.png";
+import recordBg from "@/assets/recordBg.png";
 import { useNavigate } from "react-router-dom";
+import { useUserData } from "@/hooks/useUserData";
+import { RECOMMENDATION_CATEGORIES } from "@/constants/navigation";
+import { PageLayout } from "@/components/common/PageLayout";
+import type { DiaryEntry } from "@shared/types";
 
-const recent = [
+// TODO: API에서 받아오도록 수정 필요
+const recent: DiaryEntry[] = [
   { date: "2025. 08. 25", summary: "오늘의 감정 요약 : 즐거움, 행복함" },
   { date: "2025. 08. 26", summary: "오늘의 감정 요약 : 우울함, 아쉬움" },
   { date: "2025. 08. 28", summary: "오늘의 감정 요약 : 행복함, 즐거움" },
@@ -16,45 +16,10 @@ const recent = [
 
 export default function Index() {
   const navigate = useNavigate();
-  const [nickName, setNickname] = useState("사용자");
-  const [emotion, setEmotion] = useState("행복함");
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch("/api/user/userdata", { credentials: 'include' });
-        if (response.ok) {
-          const ct = response.headers.get("content-type") || "";
-          if (ct.includes("application/json")) {
-            const data = await response.json();
-            setNickname(data.nickname || "사용자");
-            setEmotion(data.recentEmotion || "행복함");
-          } else {
-            const text = await response.text();
-            console.error("사용자 API: JSON 아닌 응답을 받음", { status: response.status, url: response.url, bodyPreview: text.slice(0, 300) });
-          }
-        } else {
-          console.warn("사용자 API 비정상 응답:", response.status, response.url);
-        }
-      } catch (error) {
-        console.error("사용자 데이터 로드 실패:", error);
-      }
-    };
-    fetchUserData();
-  }, []);
+  const { user } = useUserData();
 
   return (
-    <div className="flex justify-center bg-white w-full" style={{ fontFamily: "Inter, sans-serif" }}>
-      <div className="w-[1217px] h-[1980px] flex flex-col">
-        <section 
-          className="flex flex-1 h-full"
-        >
-          <Frame />
-          <div 
-            className="mt-16 flex flex-col flex-1 h-[1900px]"
-            style={{ background: 'linear-gradient(90deg, #FFEAB1 7.55%, #FFDED3 121.31%)' }}
-          >
-            <Header />
+    <PageLayout>
             {/* 메인 섹션 */}
             <section className="mt-24 flex flex-col justify-center items-center flex-1">
               <div>
@@ -63,7 +28,7 @@ export default function Index() {
                 </span>
               </div>
               <div className="mt-12">
-                <span className="text-4xl">안녕하세요, {nickName}님!</span>
+                <span className="text-4xl">안녕하세요, {user.nickname}님!</span>
               </div>
               <div className="mt-16">
                 <span className="text-2xl">
@@ -140,59 +105,23 @@ export default function Index() {
                 </span>
               </h2>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-10 sm:gap-16">
-                {[
-                  { src: "/book.png", alt: "책 아이콘", label: "도서" },
-                  {
-                    src: "/movie.png",
-                    alt: "영화 아이콘",
-                    label: "영화",
-                    to: "/movies",
-                  },
-                  {
-                    src: "/music.png",
-                    alt: "헤드폰 아이콘",
-                    label: "음악",
-                    to: "/music",
-                  },
-                  {
-                    src: "/book.png",
-                    alt: "책 아이콘",
-                    label: "시",
-                    to: "/poem",
-                  },
-                  {
-                    src: "/phrase.png",
-                    alt: "명언",
-                    label: "명언",
-                    to: "/phrase",
-                  },
-                ].map((item, i) => (
-                  <div key={i} className="flex flex-col items-center gap-3">
-                    <span className="grid w-[133px] h-[101px] place-items-center rounded-md">
-                      {item.to ? (
-                        <button onClick={() => navigate(item.to)}>
-                          <img
-                            src={item.src}
-                            alt={item.alt}
-                            className="w-full h-full object-contain"
-                          />
-                        </button>
-                      ) : (
-                        <img
-                          src={item.src}
-                          alt={item.alt}
-                          className="w-full h-full object-contain"
-                        />
-                      )}
-                    </span>
+                {RECOMMENDATION_CATEGORIES.map((item) => (
+                  <div key={item.id} className="flex flex-col items-center gap-3">
+                    <button
+                      onClick={() => navigate(`/${item.id === "book" ? "recommendation" : item.id}`)}
+                      className="grid w-[133px] h-[101px] place-items-center rounded-md hover:scale-105 transition-transform"
+                    >
+                      <img
+                        src={item.icon}
+                        alt={`${item.label} 아이콘`}
+                        className="w-full h-full object-contain"
+                      />
+                    </button>
                     <span className="text-sm">{item.label}</span>
                   </div>
                 ))}
               </div>
             </section>
-          </div>
-        </section>
-      </div>
-    </div>
+    </PageLayout>
   );
 }

@@ -1,6 +1,6 @@
 // 인증 관련 유틸리티 함수
 
-import type { AuthTokens, LoginRequest, RegisterRequest, SocialLoginRequest } from "@shared/types";
+import type { AuthTokens, LoginRequest, RegisterRequest, SocialLoginRequest, User } from "@shared/types";
 
 const API_BASE = import.meta.env.VITE_API_URL 
   ? `${import.meta.env.VITE_API_URL}`
@@ -112,6 +112,11 @@ export const saveTokens = (tokens: AuthTokens): void => {
   localStorage.setItem("tokenType", tokens.tokenType);
   localStorage.setItem("expiresIn", tokens.expiresIn.toString());
   localStorage.setItem("authToken", tokens.accessToken); // AuthContext 호환성
+  
+  // 사용자 정보도 저장
+  if (tokens.user) {
+    localStorage.setItem("user", JSON.stringify(tokens.user));
+  }
 };
 
 export const clearTokens = (): void => {
@@ -120,10 +125,21 @@ export const clearTokens = (): void => {
   localStorage.removeItem("tokenType");
   localStorage.removeItem("expiresIn");
   localStorage.removeItem("authToken");
+  localStorage.removeItem("user"); // 사용자 정보도 삭제
 };
 
 export const getAccessToken = (): string | null => {
   return localStorage.getItem("accessToken");
+};
+
+export const getUserInfo = (): User | null => {
+  const userStr = localStorage.getItem("user");
+  if (!userStr) return null;
+  try {
+    return JSON.parse(userStr);
+  } catch {
+    return null;
+  }
 };
 
 export const isAuthenticated = (): boolean => {
@@ -156,15 +172,15 @@ const getFrontendUrl = (): string => {
 /**
  * OAuth 로그인 URL 생성
  * 지원: kakao, google, naver
- * 리다이렉트 URL을 쿼리 파라미터로 전달
+ * 백엔드에 등록된 기본 리다이렉트 URL 사용
  */
 export const getOAuthUrl = (provider: "kakao" | "google" | "naver"): string => {
   const OAUTH_BASE = API_BASE || "https://www.jinwook.shop";
-  const frontendUrl = getFrontendUrl();
-  const redirectUrl = `${frontendUrl}/member/login/present`;
+  const oauthUrl = `${OAUTH_BASE}/api/oauth2/authorization/${provider}`;
   
-  // 리다이렉트 URL을 쿼리 파라미터로 전달
-  return `${OAUTH_BASE}/api/oauth2/authorization/${provider}?redirect_uri=${encodeURIComponent(redirectUrl)}`;
+  console.log("🔗 OAuth URL:", oauthUrl);
+  
+  return oauthUrl;
 };
 
 /**

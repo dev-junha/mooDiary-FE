@@ -1,54 +1,23 @@
-import { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
-import { Button } from "../ui/button";
-import { cn } from "../../lib/utils";
-import { Menu, X, PenSquare } from "lucide-react";
-import defaultImg from "../../assets/defaultImg.png"; // 2. 기본 이미지 임포트
-import { useNavigate } from "react-router-dom";
-
-
-
-const navItems = [
-  { to: "/", label: "홈" },
-  { to: "/write", label: "일기 작성" },
-  { to: "/results", label: "감정 분석" },
-  { to: "/records", label: "지난 일기" } /*지난일기 링크 수정*/,
-  { to: "/bookmark", label: "북마크" },
-  { to: "/myprofile", label: "프로필" } /*프로필 링크 수정*/,
-  { to: "/recommendation", label: "추천 컨텐츠" },
-];
+import { useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { Menu, X } from "lucide-react";
+import { useProfileData } from "@/hooks/useProfileData";
+import { NAV_ITEMS } from "@/constants/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { clearTokens } from "@/lib/auth";
 
 export default function Header() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [profileImage, setProfileImage] = useState(defaultImg);  // 상태 추가: 초기 기본 이미지
-  const [nickName, setNickname] = useState("사용자"); // 사용자 닉네임 상태
+  const { profileImage, nickName } = useProfileData();
+  const { logout } = useAuth();
 
-  useEffect(() => {
-    const fetchProfileData = async () =>{
-      try{
-        const response = await fetch("/api/user/nickname", { credentials: 'include' }); // 가정: 사용자 닉네임 API
-        if (response.ok) {
-          const ct = response.headers.get("content-type") || "";
-          if (ct.includes("application/json")) {
-            const data = await response.json();
-            setProfileImage(data.avatarUrl || defaultImg); // 프로필 이미지 설정
-            setNickname(data.nickname || "사용자"); // 닉네임 설정
-          } else {
-            // 서버가 인증 페이지(HTML)를 돌려주는 등 JSON이 아닌 응답을 받을 때 안전하게 로그를 남김
-            const text = await response.text();
-            console.error("프로필 API: JSON 아닌 응답을 받음", { status: response.status, url: response.url, bodyPreview: text.slice(0, 300) });
-          }
-        } else {
-          console.warn("프로필 API 비정상 응답:", response.status, response.url);
-        }
-      } catch (error){
-        console.error("프로필 데이터 로드 실패:", error);
-        //에러시 기본값 유지
-      }
+  const handleLogout = () => {
+    clearTokens();
+    logout();
+    navigate("/login");
   };
-  fetchProfileData();
-  }, []);  // 컴포넌트 마운트 시 한 번 실행
 
 
   return (
@@ -65,7 +34,7 @@ export default function Header() {
         {/* Desktop nav */}
         <div className="w-[543px] h-[70px] items-center flex border ml-8">
           <nav className="md:flex w-530 items-center gap-5 text-base justify-around ml-5">
-            {navItems.map((item) => (
+            {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -80,7 +49,7 @@ export default function Header() {
               </NavLink>
             ))}
           </nav>
-        </div>
+        </div>  
 
         <div>
           <button className="w-14 h-14 rounded ml-4 mt-4">
@@ -90,7 +59,7 @@ export default function Header() {
         </div>
 
         <div>
-          <button className="w-[104px] h-[35px] border rounded-sm ml-4" onClick={() => navigate("/login")}> 
+          <button className="w-[104px] h-[35px] border rounded-sm ml-4" onClick={handleLogout}> 
             Logout
           </button>
         </div>
@@ -109,7 +78,7 @@ export default function Header() {
       {open && (
         <div className="md:hidden border-t bg-white">
           <div className="container mx-auto px-4 py-3 flex flex-col">
-            {navItems.map((item) => (
+            {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
