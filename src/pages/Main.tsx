@@ -1,10 +1,10 @@
-import writeBgImg from "@/assets/writeBgImg.png";
-import recordBg from "@/assets/recordBg.png";
+import writeBgImg from "../assets/writeBgImg.png";
+import recordBg from "../assets/recordBg.png";
 import { useNavigate } from "react-router-dom";
-import { useUserData } from "@/hooks/useUserData";
-import { RECOMMENDATION_CATEGORIES } from "@/constants/navigation";
-import { PageLayout } from "@/components/common/PageLayout";
-import type { DiaryEntry } from "@shared/types";
+import { useUserData } from "../hooks/useUserData";
+import { RECOMMENDATION_CATEGORIES } from "../constants/navigation";
+import { PageLayout } from "../components/common/PageLayout";
+import type { DiaryEntry } from "../../shared/types";
 
 // TODO: API에서 받아오도록 수정 필요
 const recent: DiaryEntry[] = [

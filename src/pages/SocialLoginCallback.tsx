@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { socialLogin, saveTokens, extractUserIdFromRedirect, AuthError } from "@/lib/auth";
-import { useAuth } from "@/context/AuthContext";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { ErrorDisplay } from "@/components/common/ErrorDisplay";
+import { socialLogin, saveTokens, extractUserIdFromRedirect, AuthError } from "../lib/auth";
+import { useAuth } from "../context/AuthContext";
+import { LoadingSpinner } from "../components/common/LoadingSpinner";
+import { ErrorDisplay } from "../components/common/ErrorDisplay";
 
 /**
  * 소셜 로그인 리다이렉트 처리 페이지

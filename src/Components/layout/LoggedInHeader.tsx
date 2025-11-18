@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 import { Menu, X, PenSquare } from "lucide-react";
-import { NAV_ITEMS } from "@/constants/navigation";
+import { NAV_ITEMS } from "../../constants/navigation";
 
 export default function LoggedInHeader() {
   const [open, setOpen] = useState(false);

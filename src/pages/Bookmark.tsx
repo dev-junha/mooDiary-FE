@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PageLayout } from "@/components/common/PageLayout";
+import { PageLayout } from "../components/common/PageLayout";
 import { Bookmark as BookmarkIcon } from "lucide-react";
 
 interface DiaryCard {

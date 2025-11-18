@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import kakaoIcon from "@/assets/kakao.png";
-import eyeIcon from "@/assets/eye.png";
-import { login, saveTokens, getOAuthUrl, AuthError } from "@/lib/auth";
-import { useAuth } from "@/context/AuthContext";
+import kakaoIcon from "../assets/kakao.png";
+import eyeIcon from "../assets/eye.png";
+import { login, saveTokens, getOAuthUrl, AuthError } from "../lib/auth";
+import { useAuth } from "../context/AuthContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();

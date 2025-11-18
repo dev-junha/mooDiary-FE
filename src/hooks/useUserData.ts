@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import type { User } from "@shared/types";
-import defaultImg from "@/assets/defaultImg.png";
-import { getAccessToken, getUserInfo } from "@/lib/auth";
+import type { User } from "../../shared/types";
+import defaultImg from "../assets/defaultImg.png";
+import { getAccessToken, getUserInfo } from "../lib/auth";
 
 interface UseUserDataReturn {
   user: User;

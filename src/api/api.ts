@@ -7,7 +7,7 @@ import {
   createPoemRecommendation,
   getRecommendationList,
   getRecommendationDetail,
-} from "@/lib/apiClient";
+} from "../lib/apiClient";
 
 export default api;
 export {

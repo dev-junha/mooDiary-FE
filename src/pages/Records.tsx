@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageLayout } from "@/components/common/PageLayout";
+import { PageLayout } from "../components/common/PageLayout";
 
 interface DiaryCard {
   id: number;

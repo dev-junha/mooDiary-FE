@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import Frame from "@/components/ui/frame";
-import Header from "@/components/layout/Header";
+import Frame from "../ui/frame";
+import Header from "../layout/Header";
 
 interface PageLayoutProps {
   children: ReactNode;

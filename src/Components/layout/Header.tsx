@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 import { Menu, X } from "lucide-react";
-import { useProfileData } from "@/hooks/useProfileData";
-import { NAV_ITEMS } from "@/constants/navigation";
-import { useAuth } from "@/context/AuthContext";
-import { clearTokens } from "@/lib/auth";
+import { useProfileData } from "../../hooks/useProfileData";
+import { NAV_ITEMS } from "../../constants/navigation";
+import { useAuth } from "../../context/AuthContext";
+import { clearTokens } from "../../lib/auth";
 
 export default function Header() {
   const navigate = useNavigate();

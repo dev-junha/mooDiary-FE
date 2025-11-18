@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import defaultImg from "@/assets/defaultImg.png";
-import { getAccessToken } from "@/lib/auth";
+import defaultImg from "../assets/defaultImg.png";
+import { getAccessToken } from "../lib/auth";
 
 interface ProfileData {
   avatarUrl: string;

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import eyeIcon from "../assets/eye.png";
-import { register, AuthError } from "@/lib/auth";
-import { useAuth } from "@/context/AuthContext";
+import { register, AuthError } from "../lib/auth";
+import { useAuth } from "../context/AuthContext";
 
 
 const Register: React.FC = () => {
