@@ -118,7 +118,7 @@ const createRecommendation = async (type: Lowercase<ContentType>): Promise<Recom
   }
 };
 
-export const createBookRecommendation = () => createRecommendation("book");
+export const createBookRecommendation = () => createRecommendation("book"); 
 export const createMovieRecommendation = () => createRecommendation("movie");
 export const createMusicRecommendation = () => createRecommendation("music");
 export const createPoemRecommendation = () => createRecommendation("poem");
