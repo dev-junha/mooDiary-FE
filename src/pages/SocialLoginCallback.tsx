@@ -67,7 +67,7 @@ export default function SocialLoginCallback() {
         console.log("🎉 로그인 완료! 메인 페이지로 이동");
 
         // 로그인 성공 후 메인 페이지로 이동
-        navigate("/", { replace: true });
+        navigate("/main", { replace: true });
       } catch (err) {
         console.error("💥 소셜 로그인 처리 실패:", err);
         const message = err instanceof AuthError 

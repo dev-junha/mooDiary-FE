@@ -42,6 +42,30 @@ export interface DiaryEntry {
   summary: string;
   emotion?: string;
   content?: string;
+  temperature?: string;
+  progress?: number;
+}
+
+// 메인 페이지 API 응답 타입
+export interface UserProfile {
+  nickname: string;
+  profileImage: string;
+}
+
+export interface EmotionAnalysis {
+  integratedEmotion: {
+    emotion: string;
+  };
+}
+
+export interface DiaryResponse {
+  id: number;
+  userId: number;
+  content: string;
+  imageUrl: string | null;
+  emotionAnalysis: EmotionAnalysis;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AuthTokens {
@@ -74,5 +98,15 @@ export interface ApiError {
   message: string;
   status?: number;
   code?: string;
+}
+
+// 북마크 관련 타입
+export interface BookmarkItem {
+  id: number;
+  userId: number;
+  diaryId: number;
+  diaryTitle: string;
+  content: string;
+  createdAt: string;
 }
 

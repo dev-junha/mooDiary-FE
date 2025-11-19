@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
 import defaultImg from "../assets/defaultImg.png";
-import { getAccessToken } from "../lib/auth";
-
-interface ProfileData {
-  avatarUrl: string;
-  nickname: string;
-}
+import { getUserProfile } from "../lib/apiClient";
 
 interface UseProfileDataReturn {
   profileImage: string;
@@ -24,58 +19,23 @@ export const useProfileData = (): UseProfileDataReturn => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      // 인증 토큰 확인
-      const token = getAccessToken();
-      if (!token) {
-        console.log("인증 토큰이 없습니다. 기본 프로필을 사용합니다.");
-        setIsAuthenticated(false);
-        setLoading(false);
-        return;
-      }
-
       try {
         setLoading(true);
+        setError(null);
         setIsAuthenticated(true);
 
-        const response = await fetch("/api/user/nickname", {
-          credentials: "include",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        // 로그인 페이지로 리다이렉트된 경우
-        if (response.url.includes("/login")) {
-          console.warn("인증이 필요합니다. 로그인 페이지로 리다이렉트되었습니다.");
-          setIsAuthenticated(false);
-          return;
-        }
-
-        if (!response.ok) {
-          console.warn("프로필 API 비정상 응답:", response.status, response.url);
-          setIsAuthenticated(false);
-          return;
-        }
-
-        const contentType = response.headers.get("content-type") || "";
-        if (!contentType.includes("application/json")) {
-          const text = await response.text();
-          console.warn("프로필 API: JSON 아닌 응답을 받음 (로그인 필요)", {
-            status: response.status,
-            url: response.url,
-            bodyPreview: text.slice(0, 100),
-          });
-          setIsAuthenticated(false);
-          return;
-        }
-
-        const data: ProfileData = await response.json();
-        setProfileImage(data.avatarUrl || defaultImg);
+        // 메인 페이지와 동일한 API 사용
+        const data = await getUserProfile();
+        
+        setProfileImage(data.profileImage || defaultImg);
         setNickname(data.nickname || "사용자");
       } catch (err) {
         console.error("프로필 데이터 로드 실패:", err);
         setError("프로필 데이터를 불러올 수 없습니다.");
         setIsAuthenticated(false);
+        // 기본값 유지
+        setProfileImage(defaultImg);
+        setNickname("사용자");
       } finally {
         setLoading(false);
       }

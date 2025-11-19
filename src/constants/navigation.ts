@@ -6,7 +6,7 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { to: "/", label: "홈" },
+  { to: "/main", label: "홈" },
   { to: "/write", label: "일기 작성" },
   { to: "/results", label: "감정 분석" },
   { to: "/records", label: "지난 일기" },

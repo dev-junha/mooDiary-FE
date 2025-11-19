@@ -28,7 +28,17 @@ const App = () => (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Main />} />
+          {/* 기본 페이지는 로그인 */}
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          {/* 소셜 로그인 리다이렉트 처리 */}
+          <Route path="/member/login/present" element={<SocialLoginCallback />} />
+          <Route path="/member/login/create" element={<SocialLoginCallback />} />
+          
+          {/* 인증 후 접근 가능한 페이지들 */}
+          <Route path="/main" element={<Main />} />
           <Route path="/write" element={<WriteEdit />} />
           <Route path="/results" element={<Results />} />
           <Route path="/bookmark" element={<Bookmark />} />
@@ -40,13 +50,9 @@ const App = () => (
           <Route path="/music" element={<RecMusic />} />
           <Route path="/poem" element={<RecPoem />} />
           <Route path="/phrase" element={<RecPhrase />} />
+          
+          {/* 404 페이지 */}
           <Route path="*" element={<NotFound />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          {/* 소셜 로그인 리다이렉트 처리 */}
-          <Route path="/member/login/present" element={<SocialLoginCallback />} />
-          <Route path="/member/login/create" element={<SocialLoginCallback />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
