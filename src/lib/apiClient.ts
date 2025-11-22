@@ -186,6 +186,40 @@ export const getRecentDiaries = async (): Promise<DiaryResponse[]> => {
   }
 };
 
+// Diary write / analysis APIs
+export const saveDraft = async (formData: FormData): Promise<{ status?: string; message?: string; draftId?: string }> => {
+  try {
+    const response = await api.post('/api/diary/draft', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    handleApiError(error, '임시저장 실패');
+  }
+};
+
+export const analyzeEmotion = async (formData: FormData): Promise<any> => {
+  try {
+    const response = await api.post('/api/emotion/analyze', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    handleApiError(error, '감정 분석 실패');
+  }
+};
+
+export const submitDiary = async (formData: FormData): Promise<any> => {
+  try {
+    const response = await api.post('/api/diary', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    handleApiError(error, '일기 제출 실패');
+  }
+};
+
 // Bookmark API
 export const addBookmark = async (diaryId: number): Promise<void> => {
   try {
