@@ -1,22 +1,66 @@
+import { useState, useEffect } from "react";
 import writeBgImg from "@/assets/writeBgImg.png";
 import recordBg from "@/assets/recordBg.png";
 import { useNavigate } from "react-router-dom";
 import { useUserData } from "@/hooks/useUserData";
 import { RECOMMENDATION_CATEGORIES } from "@/constants/navigation";
 import { PageLayout } from "@/components/common/PageLayout";
-import type { DiaryEntry } from "@shared/types";
+import { getTodayDiary, getRecentDiaries } from "@/lib/apiClient";
+import type { DiaryResponse } from "@shared/types";
 
-// TODO: API에서 받아오도록 수정 필요
-const recent: DiaryEntry[] = [
-  { date: "2025. 08. 25", summary: "오늘의 감정 요약 : 즐거움, 행복함" },
-  { date: "2025. 08. 26", summary: "오늘의 감정 요약 : 우울함, 아쉬움" },
-  { date: "2025. 08. 28", summary: "오늘의 감정 요약 : 행복함, 즐거움" },
-  { date: "2025. 08. 29", summary: "오늘의 감정 요약 : 상쾌함, 행복함" },
-];
+// 감정별 이모지 매핑
+const EMOTION_EMOJI: Record<string, string> = {
+  HAPPY: "😊",
+  SAD: "😢",
+  ANGRY: "😠",
+  NEUTRAL: "😐",
+  ANXIOUS: "😰",
+  SURPRISED: "😲",
+  DISGUST: "🤢",
+};
+
+// 날짜 포맷 변환 함수
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}. ${month}. ${day}`;
+};
+
+// 내용 요약 함수 (첫 30자)
+const summarizeContent = (content: string): string => {
+  return content.length > 30 ? content.substring(0, 30) + "..." : content;
+};
 
 export default function Index() {
   const navigate = useNavigate();
   const { user } = useUserData();
+  const [todayDiary, setTodayDiary] = useState<DiaryResponse | null>(null);
+  const [recentDiaries, setRecentDiaries] = useState<DiaryResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // 일기 데이터 로드
+  useEffect(() => {
+    const loadDiaries = async () => {
+      try {
+        setLoading(true);
+        // 오늘 일기와 최근 일기 동시에 로드
+        const [today, recent] = await Promise.all([
+          getTodayDiary(),
+          getRecentDiaries(),
+        ]);
+        setTodayDiary(today);
+        setRecentDiaries(recent);
+      } catch (err) {
+        console.error("일기 데이터 로드 실패:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDiaries();
+  }, []);
 
   return (
     <PageLayout>
@@ -49,12 +93,21 @@ export default function Index() {
                   />
                 </div>
                 <div className="flex w-[240px] h-[35px] mt-8">
-                  <button
-                    onClick={() => navigate("/write")}
-                    className="w-full h-full rounded-md bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] text-white font-semibold hover:brightness-110 flex justify-center items-center gap-2"
-                  >
-                    + 오늘의 일기 작성하기
-                  </button>
+                  {todayDiary ? (
+                    <button
+                      onClick={() => navigate(`/write?id=${todayDiary.id}`)}
+                      className="w-full h-full rounded-md bg-gradient-to-r from-[#4CAF50] to-[#45a049] text-white font-semibold hover:brightness-110 flex justify-center items-center gap-2"
+                    >
+                      ✓ 오늘의 일기 보기
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate("/write")}
+                      className="w-full h-full rounded-md bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] text-white font-semibold hover:brightness-110 flex justify-center items-center gap-2"
+                    >
+                      + 오늘의 일기 작성하기
+                    </button>
+                  )}
                 </div>
               </div>
             </section>
@@ -66,35 +119,68 @@ export default function Index() {
                   최근 일기 기록
                 </h2>
               </div>
-              <div className="w-full max-w-[700px] mx-auto flex justify-center items-center gap-8 mt-16 flex-wrap">
-                {recent.map((entry, index) => (
-                  <div
-                    key={index}
-                    className="p-5 bg-white rounded-[10px] inline-flex flex-col gap-3 w-[332px] h-[203px] bg-contain bg-center bg-no-repeat"
-                    style={{
-                      backgroundImage: `url(${recordBg})`,
-                      backgroundSize: "contain",
-                    }}
-                  >
-                    <div className="mt-2 self-stretch text-neutral-800 text-[22px] font-semibold font-['Inter'] capitalize tracking-tight">
-                      <span className="text-[#9A623D] font-normal">
-                        {entry.date}
-                      </span>
-                    </div>
-                    <div className="self-stretch text-neutral-500 text-xl font-normal font-['Inter'] capitalize leading-normal tracking-tight">
-                      {entry.summary}
-                    </div>
-                    <div className="flex">{/* TODO: 표정/감정온도 */}</div>
+              
+              {loading ? (
+                <div className="flex justify-center items-center mt-16 min-h-[203px]">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8E573E]"></div>
+                </div>
+              ) : recentDiaries.length > 0 ? (
+                <>
+                  <div className="w-full max-w-[700px] mx-auto flex justify-center items-center gap-8 mt-16 flex-wrap">
+                    {recentDiaries.map((diary) => {
+                      const emotion = diary.emotionAnalysis?.integratedEmotion?.emotion || "NEUTRAL";
+                      const emoji = EMOTION_EMOJI[emotion] || "😐";
+                      
+                      return (
+                        <div
+                          key={diary.id}
+                          className="p-5 bg-white rounded-[10px] inline-flex flex-col gap-3 w-[332px] h-[203px] bg-contain bg-center bg-no-repeat cursor-pointer hover:scale-105 transition-transform"
+                          style={{
+                            backgroundImage: `url(${recordBg})`,
+                            backgroundSize: "contain",
+                          }}
+                          onClick={() => navigate(`/write?id=${diary.id}`)}
+                        >
+                          <div className="mt-2 self-stretch text-neutral-800 text-[22px] font-semibold font-['Inter'] capitalize tracking-tight">
+                            <span className="text-[#9A623D] font-normal">
+                              {formatDate(diary.createdAt)}
+                            </span>
+                          </div>
+                          <div className="self-stretch text-neutral-500 text-xl font-normal font-['Inter'] leading-normal tracking-tight">
+                            {summarizeContent(diary.content)}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">{emoji}</span>
+                            <span className="text-sm text-gray-600">{emotion}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-              <div className="w-64 h-12 mt-10 mx-auto">
-                <button className="w-full h-full rounded-md bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] text-white font-semibold hover:brightness-110">
-                  <span className="text-2xl font-['Inter']">
-                    &gt; 모든 일기 보기
-                  </span>
-                </button>
-              </div>
+                  <div className="w-64 h-12 mt-10 mx-auto">
+                    <button
+                      className="w-full h-full rounded-md bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] text-white font-semibold hover:brightness-110"
+                      onClick={() => navigate("/records")}
+                    >
+                      <span className="text-2xl font-['Inter']">
+                        &gt; 모든 일기 보기
+                      </span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center mt-16">
+                  <p className="text-xl text-gray-500 mb-8">
+                    아직 작성한 일기가 없습니다.
+                  </p>
+                  <button
+                    onClick={() => navigate("/write")}
+                    className="px-8 py-3 bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] text-white rounded-lg shadow-lg hover:brightness-110 transition-all"
+                  >
+                    첫 일기 작성하기 →
+                  </button>
+                </div>
+              )}
             </section>
 
             {/* 추천 콘텐츠 */}

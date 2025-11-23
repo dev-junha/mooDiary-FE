@@ -6,7 +6,7 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { to: "/", label: "홈" },
+  { to: "/main", label: "홈" },
   { to: "/write", label: "일기 작성" },
   { to: "/results", label: "감정 분석" },
   { to: "/records", label: "지난 일기" },
@@ -17,7 +17,7 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const RECOMMENDATION_CATEGORIES = [
   { id: "book", label: "도서", icon: "/book.png" },
-  { id: "movie", label: "영화", icon: "/movie.png" },
+  { id: "movies", label: "영화", icon: "/movie.png" },
   { id: "music", label: "음악", icon: "/music.png" },
   { id: "poem", label: "시", icon: "/book.png" },
   { id: "phrase", label: "명언", icon: "/phrase.png" },

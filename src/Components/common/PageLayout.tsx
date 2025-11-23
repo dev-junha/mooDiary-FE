@@ -8,7 +8,7 @@ interface PageLayoutProps {
 
 export const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   return (
-    <div className="flex justify-center bg-white w-full" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="flex justify-center bg-gradient-to-b from-light-bg-start to-light-bg-end w-full" style={{ fontFamily: "Inter, sans-serif" }}>
       <div className="w-[1217px] h-[1980px] flex flex-col">
         <section className="flex flex-1 h-full">
           <Frame />

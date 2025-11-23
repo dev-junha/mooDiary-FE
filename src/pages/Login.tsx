@@ -25,7 +25,7 @@ const Login: React.FC = () => {
       saveTokens(tokens);
       authLogin();
       alert("로그인 성공! 🎉");
-      navigate("/");
+      navigate("/main");
     } catch (error) {
       console.error(error);
       const message = error instanceof AuthError 
