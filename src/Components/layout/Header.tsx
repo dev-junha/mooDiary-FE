@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
-import { useProfileData } from "../../hooks/useProfileData";
-import { NAV_ITEMS } from "../../constants/navigation";
-import { useAuth } from "../../context/AuthContext";
-import { clearTokens } from "../../lib/auth";
+import { useProfileData } from "@/hooks/useProfileData";
+import { NAV_ITEMS } from "@/constants/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { clearTokens } from "@/lib/auth";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export default function Header() {
     <header className="sticky mt-12 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container w-full flex h-[153px] items-center px-4 sm:px-6 border items-center justify-around">
         <a 
-          href="/main"
+          href="/"
           className="flex items-center gap-2 font-semibold text-gray-900"
         >
           <img src="/diaryImg.png" className="h-12 w-12" />

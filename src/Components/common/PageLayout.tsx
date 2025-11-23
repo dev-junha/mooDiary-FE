@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import Frame from "../ui/frame";
-import Header from "../layout/Header";
+import Frame from "@/components/ui/frame";
+import Header from "@/components/layout/Header";
 
 interface PageLayoutProps {
   children: ReactNode;
@@ -8,7 +8,7 @@ interface PageLayoutProps {
 
 export const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   return (
-    <div className="flex justify-center w-full" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div className="flex justify-center bg-white w-full" style={{ fontFamily: "Inter, sans-serif" }}>
       <div className="w-[1217px] h-[1980px] flex flex-col">
         <section className="flex flex-1 h-full">
           <Frame />

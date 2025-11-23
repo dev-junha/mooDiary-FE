@@ -52,10 +52,18 @@ export interface UserProfile {
   profileImage: string;
 }
 
+export interface EmotionDetail {
+  emotion: string;
+  score: number;
+  confidence: number;
+}
+
 export interface EmotionAnalysis {
-  integratedEmotion: {
-    emotion: string;
-  };
+  textEmotion: EmotionDetail;
+  facialEmotion: EmotionDetail;
+  integratedEmotion: EmotionDetail;
+  keywords: string[];
+  timestamp: string;
 }
 
 export interface DiaryResponse {
