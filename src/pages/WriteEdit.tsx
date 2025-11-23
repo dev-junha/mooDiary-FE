@@ -180,7 +180,8 @@ function WriteEdit() {
       const formData = createDiaryFormData();
       const response = await submitDiary(formData);
       alert(response?.message ?? '일기 저장 완료');
-      navigate('/');
+      // after successful submit, navigate to the results page
+      navigate('/results');
     } catch (error) {
       console.error(error);
       alert("일기 저장에 실패했습니다.");
