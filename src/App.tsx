@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Main from "./pages/Main";
 import NotFound from "./pages/NotFound";
-import Results from "./pages/Results";
+import Results from "./pages/EmoResult";
 import Bookmark from "./pages/Bookmark";
 import Profile from "./pages/Profile";
 import RecBook from "./pages/RecBook";
