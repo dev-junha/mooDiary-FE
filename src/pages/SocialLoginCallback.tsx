@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { socialLogin, saveTokens, extractUserIdFromRedirect, AuthError } from "../lib/auth";
-import { useAuth } from "../context/AuthContext";
-import { LoadingSpinner } from "../components/common/LoadingSpinner";
-import { ErrorDisplay } from "../components/common/ErrorDisplay";
+import { socialLogin, saveTokens, extractUserIdFromRedirect, AuthError } from "@/lib/auth";
+import { useAuth } from "@/context/AuthContext";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { ErrorDisplay } from "@/components/common/ErrorDisplay";
 
 /**
  * 소셜 로그인 리다이렉트 처리 페이지
@@ -67,7 +67,7 @@ export default function SocialLoginCallback() {
         console.log("🎉 로그인 완료! 메인 페이지로 이동");
 
         // 로그인 성공 후 메인 페이지로 이동
-        navigate("/main", { replace: true });
+        navigate("/", { replace: true });
       } catch (err) {
         console.error("💥 소셜 로그인 처리 실패:", err);
         const message = err instanceof AuthError 

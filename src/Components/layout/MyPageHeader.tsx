@@ -7,7 +7,7 @@ import { NAV_ITEMS } from "@/constants/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { clearTokens } from "@/lib/auth";
 
-export default function Header() {
+export default function MyPageHeader() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const { profileImage, nickName } = useProfileData();
@@ -19,10 +19,9 @@ export default function Header() {
     navigate("/login");
   };
 
-
   return (
     <header className="sticky mt-12 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container w-full flex h-[153px] items-center px-4 sm:px-6 border items-center justify-around">
+      <div className="w-full flex h-[153px] items-center px-4 sm:px-6 border items-center justify-around">
         <a 
           href="/"
           className="flex items-center gap-2 font-semibold text-gray-900"
@@ -99,3 +98,4 @@ export default function Header() {
     </header>
   );
 }
+

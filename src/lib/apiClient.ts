@@ -1,17 +1,9 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
-import type { Recommendation, EmotionData, ContentType, ApiError, UserProfile, DiaryResponse, BookmarkItem } from "@shared/types";
+import type { Recommendation, EmotionData, ContentType, ApiError, DiaryResponse, UserProfile, BookmarkItem } from "@shared/types";
 import { getAccessToken } from "./auth";
 
 /**
- * API Base URL 설정 로직:
- * 
- * 1. 개발 환경 (DEV):
- *    - VITE_API_URL이 설정되어 있으면 그대로 사용
- *    - 없으면 빈 문자열 (상대 경로) → vite.config.ts의 프록시 사용
- * 
- * 2. 프로덕션 환경:
- *    - VITE_API_URL이 반드시 설정되어야 함 (.env.production)
- *    - 기본값: https://www.jinwook.shop
+ * API Base URL 설정 로직
  */
 const getApiBaseUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_URL as string;
@@ -20,13 +12,11 @@ const getApiBaseUrl = (): string => {
     return envUrl;
   }
   
-  // 프로덕션 환경에서는 기본 배포 주소 사용
   if (import.meta.env.PROD) {
     console.warn("VITE_API_URL이 설정되지 않았습니다. 기본 배포 주소를 사용합니다.");
     return "https://www.jinwook.shop";
   }
   
-  // 개발 환경에서는 프록시 사용 (빈 문자열 = 상대 경로)
   return "";
 };
 
@@ -45,7 +35,7 @@ export const api: AxiosInstance = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Request interceptor: 인증 토큰 자동 추가
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = getAccessToken();
@@ -74,15 +64,12 @@ const handleApiError = (error: unknown, defaultMessage: string): never => {
   throw new Error(defaultMessage);
 };
 
-// Response interceptor: 에러 처리 및 인증 실패 시 처리
+// Response interceptor
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    // 401 Unauthorized: 인증 실패 → 로그인 페이지로 리다이렉트
     if (error.response?.status === 401) {
       console.warn("인증이 만료되었습니다. 로그인 페이지로 이동합니다.");
-      // 필요시 여기서 로그아웃 처리 및 리다이렉트
-      // window.location.href = "/login";
     }
     
     console.error("API ERROR:", {
@@ -108,7 +95,7 @@ export const getEmotionData = async (): Promise<EmotionData> => {
   }
 };
 
-// Recommendation API - 통합된 함수로 개선
+// Recommendation API
 const createRecommendation = async (type: Lowercase<ContentType>): Promise<Recommendation> => {
   try {
     const response = await api.get<Recommendation>(`/recommend/${type}/create`);
@@ -163,7 +150,7 @@ export const getTodayDiary = async (): Promise<DiaryResponse | null> => {
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 204) {
-      return null; // 작성한 일기가 없는 경우
+      return null;
     }
     handleApiError(error, "오늘 일기 조회 실패");
   }
@@ -172,7 +159,6 @@ export const getTodayDiary = async (): Promise<DiaryResponse | null> => {
 export const getRecentDiaries = async (): Promise<DiaryResponse[]> => {
   try {
     const response = await api.get<DiaryResponse[]>("/api/diary/recent");
-    // 응답이 배열인지 확인하고, 아니면 빈 배열 반환
     const data = response.data;
     if (Array.isArray(data)) {
       return data;
@@ -181,7 +167,6 @@ export const getRecentDiaries = async (): Promise<DiaryResponse[]> => {
     return [];
   } catch (error) {
     console.error("최근 일기 조회 실패:", error);
-    // 에러 발생 시 빈 배열 반환 (앱이 크래시되지 않도록)
     return [];
   }
 };
@@ -220,26 +205,31 @@ export const submitDiary = async (formData: FormData): Promise<any> => {
   }
 };
 
-// Bookmark API
-export const addBookmark = async (diaryId: number): Promise<void> => {
+// Diary Records API
+export const getUserDiaries = async (userId: number): Promise<DiaryResponse[]> => {
   try {
-    await api.post(`/api/bookmarks/${diaryId}`);
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status === 409) {
-      throw new Error("이미 북마크된 일기입니다.");
+    const response = await api.get<DiaryResponse[]>(`/user/${userId}`);
+    const data = response.data;
+    if (Array.isArray(data)) {
+      return data;
     }
-    handleApiError(error, "북마크 추가 실패");
-  }
-};
-
-export const removeBookmark = async (diaryId: number): Promise<void> => {
-  try {
-    await api.delete(`/api/bookmarks/${diaryId}`);
+    console.warn("일기 목록 API가 배열이 아닌 데이터를 반환했습니다:", data);
+    return [];
   } catch (error) {
-    handleApiError(error, "북마크 삭제 실패");
+    console.error("일기 목록 조회 실패:", error);
+    return [];
   }
 };
 
+export const deleteDiary = async (diaryId: number): Promise<void> => {
+  try {
+    await api.delete(`/api/diary/${diaryId}`);
+  } catch (error) {
+    handleApiError(error, "일기 삭제 실패");
+  }
+};
+
+// Bookmark API
 export const getBookmarks = async (): Promise<BookmarkItem[]> => {
   try {
     const response = await api.get<BookmarkItem[]>("/api/bookmarks");
@@ -247,5 +237,17 @@ export const getBookmarks = async (): Promise<BookmarkItem[]> => {
   } catch (error) {
     console.error("북마크 조회 실패:", error);
     return [];
+  }
+};
+
+export const toggleBookmark = async (diaryId: number, isBookmarked: boolean): Promise<void> => {
+  try {
+    if (isBookmarked) {
+      await api.delete(`/api/bookmarks/${diaryId}`);
+    } else {
+      await api.post(`/api/bookmarks/${diaryId}`);
+    }
+  } catch (error) {
+    handleApiError(error, "북마크 토글 실패");
   }
 };

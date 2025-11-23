@@ -1,28 +1,26 @@
 import { useState, useEffect } from "react";
-import writeBgImg from "../assets/writeBgImg.png";
-import recordBg from "../assets/recordBg.png";
+import writeBgImg from "@/assets/writeBgImg.png";
+import recordBg from "@/assets/recordBg.png";
 import { useNavigate } from "react-router-dom";
-import { useUserData } from "../hooks/useUserData";
-import { RECOMMENDATION_CATEGORIES } from "../constants/navigation";
-import { PageLayout } from "../components/common/PageLayout";
-import { getRecentDiaries, getTodayDiary } from "../lib/apiClient";
-import type { DiaryResponse } from "../../shared/types";
-import { LoadingSpinner } from "../components/common/LoadingSpinner";
+import { useUserData } from "@/hooks/useUserData";
+import { RECOMMENDATION_CATEGORIES } from "@/constants/navigation";
+import { PageLayout } from "@/components/common/PageLayout";
+import { getTodayDiary, getRecentDiaries } from "@/lib/apiClient";
+import type { DiaryResponse } from "@shared/types";
 
-// 감정을 온도와 진행도로 변환하는 헬퍼 함수
-const getEmotionMetrics = (emotion: string) => {
-  const emotionMap: Record<string, { temperature: string; progress: number }> = {
-    HAPPY: { temperature: "38.5", progress: 85 },
-    SAD: { temperature: "35.2", progress: 40 },
-    ANGRY: { temperature: "40.1", progress: 95 },
-    ANXIOUS: { temperature: "36.8", progress: 60 },
-    CALM: { temperature: "37.0", progress: 70 },
-  };
-  return emotionMap[emotion] || { temperature: "37.0", progress: 50 };
+// 감정별 이모지 매핑
+const EMOTION_EMOJI: Record<string, string> = {
+  HAPPY: "😊",
+  SAD: "😢",
+  ANGRY: "😠",
+  NEUTRAL: "😐",
+  ANXIOUS: "😰",
+  SURPRISED: "😲",
+  DISGUST: "🤢",
 };
 
-// 날짜 포맷팅 헬퍼 함수
-const formatDate = (dateString: string) => {
+// 날짜 포맷 변환 함수
+const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -30,77 +28,39 @@ const formatDate = (dateString: string) => {
   return `${year}. ${month}. ${day}`;
 };
 
-// 감정을 한글로 변환하는 헬퍼 함수
-const getEmotionLabel = (emotion: string) => {
-  const emotionLabels: Record<string, string> = {
-    HAPPY: "행복함",
-    SAD: "슬픔",
-    ANGRY: "화남",
-    ANXIOUS: "불안함",
-    CALM: "평온함",
-  };
-  return emotionLabels[emotion] || "알 수 없음";
+// 내용 요약 함수 (첫 30자)
+const summarizeContent = (content: string): string => {
+  return content.length > 30 ? content.substring(0, 30) + "..." : content;
 };
 
 export default function Index() {
   const navigate = useNavigate();
   const { user } = useUserData();
-  const [recentDiaries, setRecentDiaries] = useState<DiaryResponse[]>([]);
   const [todayDiary, setTodayDiary] = useState<DiaryResponse | null>(null);
+  const [recentDiaries, setRecentDiaries] = useState<DiaryResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
+  // 일기 데이터 로드
   useEffect(() => {
-    const fetchData = async () => {
+    const loadDiaries = async () => {
       try {
         setLoading(true);
-        setError(null);
-        
-        // 최근 일기 4개와 오늘 일기 동시 조회
-        const [diaries, today] = await Promise.all([
-          getRecentDiaries(),
+        // 오늘 일기와 최근 일기 동시에 로드
+        const [today, recent] = await Promise.all([
           getTodayDiary(),
+          getRecentDiaries(),
         ]);
-        
-        // 배열인지 다시 한번 확인 (타입 가드)
-        if (Array.isArray(diaries)) {
-          setRecentDiaries(diaries);
-        } else {
-          console.warn("최근 일기 데이터가 배열이 아닙니다:", diaries);
-          setRecentDiaries([]);
-        }
         setTodayDiary(today);
+        setRecentDiaries(recent);
       } catch (err) {
-        console.error("데이터 로드 실패:", err);
-        setError("데이터를 불러오는데 실패했습니다.");
-        setRecentDiaries([]); // 에러 시 빈 배열로 설정
+        console.error("일기 데이터 로드 실패:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    loadDiaries();
   }, []);
-
-  if (loading) {
-    return (
-      <PageLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <LoadingSpinner />
-        </div>
-      </PageLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <PageLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-red-500 text-xl">{error}</div>
-        </div>
-      </PageLayout>
-    );
-  }
 
   return (
     <PageLayout>
@@ -133,12 +93,21 @@ export default function Index() {
                   />
                 </div>
                 <div className="flex w-[240px] h-[35px] mt-8">
-                  <button
-                    onClick={() => navigate("/write")}
-                    className="w-full h-full rounded-md bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] text-white font-semibold hover:brightness-110 flex justify-center items-center gap-2"
-                  >
-                    + 오늘의 일기 작성하기
-                  </button>
+                  {todayDiary ? (
+                    <button
+                      onClick={() => navigate(`/write?id=${todayDiary.id}`)}
+                      className="w-full h-full rounded-md bg-gradient-to-r from-[#4CAF50] to-[#45a049] text-white font-semibold hover:brightness-110 flex justify-center items-center gap-2"
+                    >
+                      ✓ 오늘의 일기 보기
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate("/write")}
+                      className="w-full h-full rounded-md bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] text-white font-semibold hover:brightness-110 flex justify-center items-center gap-2"
+                    >
+                      + 오늘의 일기 작성하기
+                    </button>
+                  )}
                 </div>
               </div>
             </section>
@@ -150,67 +119,68 @@ export default function Index() {
                   최근 일기 기록
                 </h2>
               </div>
-              <div className="w-full max-w-[700px] mx-auto flex justify-center items-center gap-8 mt-16 flex-wrap">
-                {recentDiaries.length === 0 ? (
-                  <div className="text-gray-500 text-xl">
-                    아직 작성된 일기가 없습니다.
-                  </div>
-                ) : (
-                  recentDiaries.map((diary) => {
-                    const emotion = diary.emotionAnalysis.integratedEmotion.emotion;
-                    const metrics = getEmotionMetrics(emotion);
-                    const summary = diary.content.length > 50 
-                      ? diary.content.substring(0, 50) + "..." 
-                      : diary.content;
-
-                    return (
-                      <div
-                        key={diary.id}
-                        className="p-5 bg-white rounded-[10px] inline-flex flex-col gap-3 w-[332px] h-[203px] bg-contain bg-center bg-no-repeat cursor-pointer hover:shadow-lg transition-shadow"
-                        style={{
-                          backgroundImage: `url(${recordBg})`,
-                          backgroundSize: "contain",
-                        }}
-                        onClick={() => navigate(`/diary/${diary.id}`)}
-                      >
-                        <div className="mt-2 self-stretch text-neutral-800 text-[22px] font-semibold font-['Inter'] capitalize tracking-tight">
-                          <span className="text-[#9A623D] font-normal">
-                            {formatDate(diary.createdAt)}
-                          </span>
-                        </div>
-                        <div className="self-stretch text-neutral-500 text-base font-normal font-['Inter'] leading-normal tracking-tight line-clamp-2">
-                          오늘의 감정: {getEmotionLabel(emotion)}
-                        </div>
-                        {/* 감정 온도 그래프 */}
-                        <div className="mt-2">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-gray-500">기분</span>
-                            <span className="text-sm font-semibold text-gray-700">
-                              {metrics.temperature}°C
+              
+              {loading ? (
+                <div className="flex justify-center items-center mt-16 min-h-[203px]">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8E573E]"></div>
+                </div>
+              ) : recentDiaries.length > 0 ? (
+                <>
+                  <div className="w-full max-w-[700px] mx-auto flex justify-center items-center gap-8 mt-16 flex-wrap">
+                    {recentDiaries.map((diary) => {
+                      const emotion = diary.emotionAnalysis?.integratedEmotion?.emotion || "NEUTRAL";
+                      const emoji = EMOTION_EMOJI[emotion] || "😐";
+                      
+                      return (
+                        <div
+                          key={diary.id}
+                          className="p-5 bg-white rounded-[10px] inline-flex flex-col gap-3 w-[332px] h-[203px] bg-contain bg-center bg-no-repeat cursor-pointer hover:scale-105 transition-transform"
+                          style={{
+                            backgroundImage: `url(${recordBg})`,
+                            backgroundSize: "contain",
+                          }}
+                          onClick={() => navigate(`/write?id=${diary.id}`)}
+                        >
+                          <div className="mt-2 self-stretch text-neutral-800 text-[22px] font-semibold font-['Inter'] capitalize tracking-tight">
+                            <span className="text-[#9A623D] font-normal">
+                              {formatDate(diary.createdAt)}
                             </span>
                           </div>
-                          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-yellow-400 via-orange-400 to-red-500 rounded-full transition-all"
-                              style={{ width: `${metrics.progress}%` }}
-                            />
+                          <div className="self-stretch text-neutral-500 text-xl font-normal font-['Inter'] leading-normal tracking-tight">
+                            {summarizeContent(diary.content)}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">{emoji}</span>
+                            <span className="text-sm text-gray-600">{emotion}</span>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-              <div className="w-64 h-12 mt-10 mx-auto">
-                <button 
-                  onClick={() => navigate("/records")}
-                  className="w-full h-full rounded-md bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] text-white font-semibold hover:brightness-110"
-                >
-                  <span className="text-2xl font-['Inter']">
-                    &gt; 모든 일기 보기
-                  </span>
-                </button>
-              </div>
+                      );
+                    })}
+                  </div>
+                  <div className="w-64 h-12 mt-10 mx-auto">
+                    <button
+                      className="w-full h-full rounded-md bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] text-white font-semibold hover:brightness-110"
+                      onClick={() => navigate("/records")}
+                    >
+                      <span className="text-2xl font-['Inter']">
+                        &gt; 모든 일기 보기
+                      </span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center mt-16">
+                  <p className="text-xl text-gray-500 mb-8">
+                    아직 작성한 일기가 없습니다.
+                  </p>
+                  <button
+                    onClick={() => navigate("/write")}
+                    className="px-8 py-3 bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] text-white rounded-lg shadow-lg hover:brightness-110 transition-all"
+                  >
+                    첫 일기 작성하기 →
+                  </button>
+                </div>
+              )}
             </section>
 
             {/* 추천 콘텐츠 */}
@@ -221,41 +191,21 @@ export default function Index() {
                 </span>
               </h2>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-10 sm:gap-16">
-                {RECOMMENDATION_CATEGORIES.map((item) => {
-                  // 각 카테고리별 라우트 매핑
-                  const getRoutePath = (id: string) => {
-                    switch (id) {
-                      case "book":
-                        return "/recommendation";
-                      case "movie":
-                        return "/movies";
-                      case "music":
-                        return "/music";
-                      case "poem":
-                        return "/poem";
-                      case "phrase":
-                        return "/phrase";
-                      default:
-                        return "/main";
-                    }
-                  };
-
-                  return (
-                    <div key={item.id} className="flex flex-col items-center gap-3">
-                      <button
-                        onClick={() => navigate(getRoutePath(item.id))}
-                        className="grid w-[133px] h-[101px] place-items-center rounded-md hover:scale-105 transition-transform"
-                      >
-                        <img
-                          src={item.icon}
-                          alt={`${item.label} 아이콘`}
-                          className="w-full h-full object-contain"
-                        />
-                      </button>
-                      <span className="text-sm">{item.label}</span>
-                    </div>
-                  );
-                })}
+                {RECOMMENDATION_CATEGORIES.map((item) => (
+                  <div key={item.id} className="flex flex-col items-center gap-3">
+                    <button
+                      onClick={() => navigate(`/${item.id === "book" ? "recommendation" : item.id}`)}
+                      className="grid w-[133px] h-[101px] place-items-center rounded-md hover:scale-105 transition-transform"
+                    >
+                      <img
+                        src={item.icon}
+                        alt={`${item.label} 아이콘`}
+                        className="w-full h-full object-contain"
+                      />
+                    </button>
+                    <span className="text-sm">{item.label}</span>
+                  </div>
+                ))}
               </div>
             </section>
     </PageLayout>

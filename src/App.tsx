@@ -10,7 +10,6 @@ import Results from "./pages/EmoResult";
 import Bookmark from "./pages/Bookmark";
 import Profile from "./pages/Profile";
 import RecBook from "./pages/RecBook";
-import MyPage from "./pages/MyPage";
 import RecMovie from "./pages/RecMovie";
 import RecMusic from "./pages/RecMusic";
 import RecPoem from "./pages/RecPoem";
@@ -44,7 +43,6 @@ const App = () => (
           <Route path="/bookmark" element={<Bookmark />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/recommendation" element={<RecBook />} />
-          <Route path="/mypage" element={<MyPage />} />
           <Route path="/records" element={<Records />} />
           <Route path="/movies" element={<RecMovie />} />
           <Route path="/music" element={<RecMusic />} />
