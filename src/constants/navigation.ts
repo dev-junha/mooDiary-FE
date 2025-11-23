@@ -11,7 +11,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/results", label: "감정 분석" },
   { to: "/records", label: "지난 일기" },
   { to: "/bookmark", label: "북마크" },
-  { to: "/myprofile", label: "프로필" },
+  { to: "/profile", label: "프로필" },
   { to: "/recommendation", label: "추천 컨텐츠" },
 ];
 

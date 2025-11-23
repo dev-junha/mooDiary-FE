@@ -6,6 +6,8 @@ export interface User {
   nickname: string;
   username?: string;
   phone?: string;
+  location?: string;
+  bio?: string;
   profileImage?: string;
   avatarUrl?: string; // 호환성을 위해 유지
   recentEmotion?: string;

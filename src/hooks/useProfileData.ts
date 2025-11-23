@@ -3,7 +3,7 @@ import defaultImg from "@/assets/defaultImg.png";
 import { getAccessToken } from "@/lib/auth";
 
 interface ProfileData {
-  avatarUrl: string;
+  profileImage: string;
   nickname: string;
 }
 
@@ -37,7 +37,7 @@ export const useProfileData = (): UseProfileDataReturn => {
         setLoading(true);
         setIsAuthenticated(true);
 
-        const response = await fetch("/api/user/nickname", {
+        const response = await fetch("/api/main/user/profile", {
           credentials: "include",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -70,7 +70,7 @@ export const useProfileData = (): UseProfileDataReturn => {
         }
 
         const data: ProfileData = await response.json();
-        setProfileImage(data.avatarUrl || defaultImg);
+        setProfileImage(data.profileImage || defaultImg);
         setNickname(data.nickname || "사용자");
       } catch (err) {
         console.error("프로필 데이터 로드 실패:", err);
