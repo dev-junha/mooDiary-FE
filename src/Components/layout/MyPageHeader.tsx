@@ -21,17 +21,17 @@ export default function MyPageHeader() {
 
   return (
     <header className="sticky mt-12 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="w-full flex h-[153px] items-center px-4 sm:px-6 border items-center justify-around">
+      <div className="container w-full flex h-[153px] items-center px-4 sm:px-6 items-center justify-between">
         <a 
           href="/"
-          className="flex items-center gap-2 font-semibold text-gray-900"
+          className="flex items-center gap-1 font-semibold text-gray-900"
         >
           <img src="/diaryImg.png" className="h-12 w-12" />
           <span className="text-[32px] font-['jsMath-cmti10'] text-[#8E573E]">mooDiary</span>
         </a>
 
         {/* Desktop nav */}
-        <div className="w-[543px] h-[70px] items-center flex border ml-8">
+        <div className="w-[543px] h-[70px] items-center flex border">
           <nav className="md:flex w-530 items-center gap-5 text-base justify-around ml-5">
             {NAV_ITEMS.map((item) => (
               <NavLink
@@ -50,17 +50,20 @@ export default function MyPageHeader() {
           </nav>
         </div>  
 
-        <div>
-          <button className="w-14 h-14 rounded ml-4 mt-4">
+        <div className="flex items-center gap-4">
+          <button className="w-14 h-14 rounded mt-4">
             <img src={profileImage} alt="프로필 이미지" className="h-full w-full object-contain" />
             <span className="text-[12px] whitespace-nowrap">안녕하세요, {nickName}님</span>
           </button>
-        </div>
 
-        <div>
-          <button className="w-[104px] h-[35px] border rounded-sm ml-4" onClick={handleLogout}> 
+          <div>
+          <button
+            className="w-[104px] h-[35px] border rounded-sm ml-4 text-white bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] hover:from-[#FFB347] hover:to-[#FF795E] transition-colors"
+            onClick={handleLogout}
+          >
             Logout
           </button>
+        </div>
         </div>
 
         {/* Mobile */}

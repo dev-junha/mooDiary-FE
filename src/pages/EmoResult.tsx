@@ -277,7 +277,9 @@ export default function EmoResult() {
   const mostEmotionPercent = Math.round(((distribution[stats.mostEmotion] || 0) / distributionTotal) * 100);
 
   return (
-    <div className="flex justify-center w-full font-sans bg-white">
+    <div className="flex justify-center w-full font-sans bg-white" style={{
+      background: "linear-gradient(90deg, #FFEAB1 7.55%, #FFDED3 121.31%)",
+    }}>
       {/* [수정 사항]
         1. w-[1217px] 컨테이너에 직접 배경 그라데이션 적용 (흰색 여백 제거)
         2. Frame 컴포넌트 및 관련 레이아웃(Flex row) 제거

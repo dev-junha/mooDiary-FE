@@ -59,7 +59,10 @@ export default function Header() {
         </div>
 
         <div>
-          <button className="w-[104px] h-[35px] border rounded-sm ml-4" onClick={handleLogout}> 
+          <button
+            className="w-[104px] h-[35px] border rounded-sm ml-4 text-white bg-gradient-to-r from-[#FF9E0D] to-[#FF5B3A] hover:from-[#FFB347] hover:to-[#FF795E] transition-colors"
+            onClick={handleLogout}
+          >
             Logout
           </button>
         </div>

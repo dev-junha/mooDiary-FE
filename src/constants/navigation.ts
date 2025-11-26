@@ -19,7 +19,7 @@ export const RECOMMENDATION_CATEGORIES = [
   { id: "book", label: "도서", icon: "/book.png" },
   { id: "movies", label: "영화", icon: "/movie.png" },
   { id: "music", label: "음악", icon: "/music.png" },
-  { id: "poem", label: "시", icon: "/book.png" },
+  { id: "poem", label: "시", icon: "/poem.svg" },
   { id: "phrase", label: "명언", icon: "/phrase.png" },
 ] as const;
 
