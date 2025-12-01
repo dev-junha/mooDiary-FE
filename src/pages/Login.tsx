@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import kakaoIcon from "@/assets/kakao.png";
 import eyeIcon from "@/assets/eye.png";
+import bookIcon from "../assets/book.png";
 import { login, saveTokens, getOAuthUrl, AuthError } from "@/lib/auth";
 import { useAuth } from "@/context/AuthContext";
 
@@ -25,7 +26,7 @@ const Login: React.FC = () => {
       saveTokens(tokens);
       authLogin();
       alert("로그인 성공! 🎉");
-      navigate("/main");
+      navigate("/");
     } catch (error) {
       console.error(error);
       const message = error instanceof AuthError 
@@ -57,7 +58,8 @@ const Login: React.FC = () => {
           {/* 왼쪽 영역 */}
           <div className="flex flex-col items-center justify-center w-1/2 bg-gradient-to-b from-[#FFFBEF] via-[#FFEAB1] to-[#F8EFAA] border-r border-orange-200 relative">
             <h1 className="text-[32px] font-serif text-[#b86b3b] mb-2 flex items-center">
-              <span className="text-[34px] mr-2">📖</span> mooDiary
+              <img src={bookIcon} alt="check" className="w-8 h-8 mr-2" />
+              mooDiary
               <span className="ml-1 text-red-500">❤️</span>
             </h1>
             <p className="text-center text-gray-700 mt-4 leading-relaxed text-[17px]">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import eyeIcon from "../assets/eye.png";
+import bookIcon from "../assets/book.png";
 import { register, AuthError } from "@/lib/auth";
 import { useAuth } from "@/context/AuthContext";
 
@@ -73,7 +74,8 @@ const Register: React.FC = () => {
           {/* 왼쪽 영역 */}
           <div className="flex flex-col items-center justify-center w-1/2 bg-gradient-to-b from-[#FFFBEF] via-[#FFEAB1] to-[#F8EFAA] relative border-[4px] border-orange-200 rounded-lg shadow-sm">
             <h1 className="text-[28px] font-semibold text-[#b86b3b] mb-2 flex items-center">
-              <span className="text-[32px] mr-2">📖</span> mooDiary
+              <img src={bookIcon} alt="check" className="w-8 h-8 mr-2" />
+              mooDiary
               <span className="ml-1 text-red-500">❤️</span>
             </h1>
             <p className="text-center text-gray-700 mt-4 leading-relaxed">
