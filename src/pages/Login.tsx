@@ -26,7 +26,7 @@ const Login: React.FC = () => {
       saveTokens(tokens);
       authLogin();
       alert("로그인 성공! 🎉");
-      navigate("/");
+      navigate("/main");
     } catch (error) {
       console.error(error);
       const message = error instanceof AuthError 
@@ -162,26 +162,6 @@ const Login: React.FC = () => {
                 className="w-5 h-5"
               />
               <span>Google 로그인</span>
-            </button>
-
-            {/* 네이버 로그인 */}
-            <button
-              onClick={handleNaverLogin}
-              className="w-full bg-[#03C75A] hover:bg-[#02B350] text-white font-semibold py-2.5 rounded-md shadow-sm mt-2 flex items-center justify-center space-x-2"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm5.5 6.5L10 11 4.5 6.5h11z"
-                  fill="white"
-                />
-              </svg>
-              <span>네이버 로그인</span>
             </button>
 
             <p className="mt-5 text-sm text-gray-600">

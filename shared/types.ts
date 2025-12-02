@@ -30,7 +30,7 @@ export interface Recommendation {
   author?: string;
 }
 
-export type ContentType = "BOOK" | "MOVIE" | "MUSIC" | "POEM" | "PHRASE";
+export type ContentType = "BOOK" | "MOVIE" | "MUSIC" | "POEM" | "PHRASE" | "WISE-SAYING";
 
 export interface RecommendationRequest {
   year: number;
@@ -112,11 +112,16 @@ export interface ApiError {
 
 // 북마크 관련 타입
 export interface BookmarkItem {
-  id: number;
-  userId: number;
   diaryId: number;
-  diaryTitle: string;
   content: string;
-  createdAt: string;
+  temperature: number;
+  createdAt: number[]; // [year, month, day, hour, minute, second]
+}
+
+export interface BookmarkWithStats {
+  numberOfBookmarkedDiary: number;
+  numberOfTotalDiary: number;
+  averageTemperature: number;
+  bookmarks: BookmarkItem[];
 }
 

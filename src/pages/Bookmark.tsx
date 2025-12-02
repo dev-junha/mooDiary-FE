@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
 import { PageLayout } from "@/components/common/PageLayout";
 import { Bookmark as BookmarkIcon } from "lucide-react";
-import { getBookmarks, toggleBookmark as toggleBookmarkApi, deleteDiary } from "@/lib/apiClient";
+import { getBookmarksWithStats, removeBookmark, deleteDiary } from "@/lib/apiClient";
 import type { BookmarkItem } from "@shared/types";
 
 export default function Bookmark() {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // 통계 데이터
+  const [bookmarkCount, setBookmarkCount] = useState(0);
+  const [averageTemp, setAverageTemp] = useState(0);
+  const [totalDiaryCount, setTotalDiaryCount] = useState(0);
 
   // 북마크 데이터 로드
   useEffect(() => {
@@ -18,8 +23,11 @@ export default function Bookmark() {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await getBookmarks();
-      setBookmarks(data);
+      const data = await getBookmarksWithStats();
+      setBookmarks(data.bookmarks);
+      setBookmarkCount(data.numberOfBookmarkedDiary);
+      setAverageTemp(data.averageTemperature);
+      setTotalDiaryCount(data.numberOfTotalDiary);
     } catch (err) {
       setError("북마크를 불러오는데 실패했습니다.");
       console.error(err);
@@ -27,11 +35,6 @@ export default function Bookmark() {
       setIsLoading(false);
     }
   };
-
-  // 통계 데이터
-  const bookmarkCount = bookmarks.length;
-  const averageTemp = 37.8; // TODO: 실제 평균 온도 계산
-  const totalDiaryCount = bookmarks.length; // 현재는 북마크 수와 동일
 
   const handleEdit = (diaryId: number) => {
     console.log("수정하기:", diaryId);
@@ -54,20 +57,22 @@ export default function Bookmark() {
 
   const handleToggleBookmark = async (diaryId: number) => {
     try {
-      // 북마크가 되어 있으면 해제 (isBookmarked = true)
-      await toggleBookmarkApi(diaryId, true);
-      // UI에서 제거
+      // 북마크 해제
+      await removeBookmark(diaryId);
+      // UI에서 제거하고 통계 업데이트
       setBookmarks(bookmarks.filter((b) => b.diaryId !== diaryId));
+      setBookmarkCount(prev => prev - 1);
     } catch (err) {
       alert("북마크 해제에 실패했습니다.");
       console.error(err);
     }
   };
 
-  // 날짜 포맷팅 함수
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+  // 날짜 포맷팅 함수 (number[] 형태: [year, month, day, hour, minute, second])
+  const formatDate = (dateArray: number[]) => {
+    if (!dateArray || dateArray.length < 3) return "";
+    const [year, month, day] = dateArray;
+    return `${year}.${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')}`;
   };
 
   if (isLoading) {
@@ -115,7 +120,7 @@ export default function Bookmark() {
 
         {/* 평균 북마크 온도 */}
         <div className="w-[200px] h-[100px] bg-[#D1F5D3] rounded-lg flex flex-col items-center justify-center shadow-md border-2 border-[#4ADE80]">
-          <span className="text-4xl font-bold text-[#22C55E]">{averageTemp}°C</span>
+          <span className="text-4xl font-bold text-[#22C55E]">{(averageTemp || 0).toFixed(1)}°C</span>
           <span className="text-lg text-gray-700 mt-1">평균 북마크 온도</span>
         </div>
 
@@ -135,9 +140,9 @@ export default function Bookmark() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-[1200px] mx-auto px-4">
-            {bookmarks.map((bookmark) => (
+            {bookmarks.map((bookmark, index) => (
               <div
-                key={bookmark.id}
+                key={`${bookmark.diaryId}-${index}`}
                 className="relative bg-[#FFF9E6] rounded-lg p-6 shadow-md border-2 border-[#FFD66B] hover:shadow-lg transition-shadow"
               >
                 {/* 북마크 아이콘 */}
@@ -152,29 +157,29 @@ export default function Bookmark() {
                   />
                 </button>
 
-              {/* 이미지 플레이스홀더 */}
-              <div className="w-full h-32 bg-[#FFE8B3] rounded-lg flex items-center justify-center mb-4">
-                <svg
-                  className="w-16 h-16 text-[#FFA726]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
+                {/* 이미지 플레이스홀더 */}
+                <div className="w-full h-32 bg-[#FFE8B3] rounded-lg flex items-center justify-center mb-4">
+                  <svg
+                    className="w-16 h-16 text-[#FFA726]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
 
-                {/* 제목과 온도 */}
+                {/* 일기 ID와 온도 */}
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-lg font-semibold text-gray-800">
-                    {bookmark.diaryTitle}
+                    일기 #{bookmark.diaryId}
                   </h3>
-                  <span className="text-sm text-gray-600">37.5°C</span>
+                  <span className="text-sm text-gray-600">{(bookmark.temperature || 0).toFixed(1)}°C</span>
                 </div>
 
                 {/* 날짜 */}
@@ -184,17 +189,6 @@ export default function Bookmark() {
                 <p className="text-sm text-gray-700 mb-4 line-clamp-3">
                   {bookmark.content}
                 </p>
-
-                {/* 감정 진행 바 */}
-                <div className="mb-4">
-                  <span className="text-xs text-gray-500 block mb-1">기쁨</span>
-                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-full transition-all"
-                      style={{ width: "75%" }}
-                    />
-                  </div>
-                </div>
 
                 {/* 버튼 그룹 */}
                 <div className="flex gap-2">

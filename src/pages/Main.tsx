@@ -193,7 +193,7 @@ export default function Index() {
               <div className="mt-8 flex flex-wrap items-center justify-center gap-10 sm:gap-16">
                 {RECOMMENDATION_CATEGORIES.map((item) => (
                   <div key={item.id} className="flex flex-col items-center gap-3">
-                    <button
+                    <button 
                       onClick={() => navigate(`/${item.id === "book" ? "recommendation" : item.id}`)}
                       className="grid w-[133px] h-[101px] place-items-center rounded-md hover:scale-105 transition-transform"
                     >

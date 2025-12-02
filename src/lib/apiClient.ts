@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
-import type { Recommendation, EmotionData, ContentType, ApiError, DiaryResponse, UserProfile, BookmarkItem } from "@shared/types";
+import type { Recommendation, EmotionData, ContentType, ApiError, DiaryResponse, UserProfile, BookmarkItem, BookmarkWithStats } from "@shared/types";
 import { getAccessToken } from "./auth";
 
 /**
@@ -109,6 +109,7 @@ export const createBookRecommendation = () => createRecommendation("book");
 export const createMovieRecommendation = () => createRecommendation("movie");
 export const createMusicRecommendation = () => createRecommendation("music");
 export const createPoemRecommendation = () => createRecommendation("poem");
+export const createWiseSayingRecommendation = () => createRecommendation("wise-saying");
 
 export const getRecommendationList = async (
   year: number,
@@ -208,7 +209,9 @@ export const submitDiary = async (formData: FormData): Promise<any> => {
 // Diary Records API
 export const getUserDiaries = async (userId: number): Promise<DiaryResponse[]> => {
   try {
-    const response = await api.get<DiaryResponse[]>(`/user/${userId}`);
+    console.log(`📋 일기 목록 조회 요청: /api/user/${userId}`);
+    const response = await api.get<DiaryResponse[]>(`/api/user/${userId}`);
+    console.log("✅ 일기 목록 조회 성공:", response.data);
     const data = response.data;
     if (Array.isArray(data)) {
       return data;
@@ -216,7 +219,19 @@ export const getUserDiaries = async (userId: number): Promise<DiaryResponse[]> =
     console.warn("일기 목록 API가 배열이 아닌 데이터를 반환했습니다:", data);
     return [];
   } catch (error) {
-    console.error("일기 목록 조회 실패:", error);
+    console.error("❌ 일기 목록 조회 실패:", error);
+    
+    // 인증 에러인 경우 에러를 throw
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      throw new Error("로그인이 필요합니다.");
+    }
+    
+    // 302 리다이렉트인 경우에도 인증 에러로 처리
+    if (axios.isAxiosError(error) && error.response?.status === 302) {
+      throw new Error("로그인이 필요합니다.");
+    }
+    
+    // 기타 에러는 빈 배열 반환
     return [];
   }
 };
@@ -230,9 +245,19 @@ export const deleteDiary = async (diaryId: number): Promise<void> => {
 };
 
 // Bookmark API
-export const getBookmarks = async (): Promise<BookmarkItem[]> => {
+export const getBookmarksWithStats = async (): Promise<BookmarkWithStats> => {
   try {
-    const response = await api.get<BookmarkItem[]>("/api/bookmarks");
+    const response = await api.get<BookmarkWithStats>("/api/bookmarks/registered");
+    return response.data;
+  } catch (error) {
+    console.error("북마크 조회 실패:", error);
+    throw error;
+  }
+};
+
+export const getAllBookmarks = async (): Promise<BookmarkItem[]> => {
+  try {
+    const response = await api.get<BookmarkItem[]>("/api/bookmarks/all");
     return response.data;
   } catch (error) {
     console.error("북마크 조회 실패:", error);
@@ -240,14 +265,18 @@ export const getBookmarks = async (): Promise<BookmarkItem[]> => {
   }
 };
 
-export const toggleBookmark = async (diaryId: number, isBookmarked: boolean): Promise<void> => {
+export const addBookmark = async (diaryId: number): Promise<void> => {
   try {
-    if (isBookmarked) {
-      await api.delete(`/api/bookmarks/${diaryId}`);
-    } else {
-      await api.post(`/api/bookmarks/${diaryId}`);
-    }
+    await api.post(`/api/bookmarks/${diaryId}`);
   } catch (error) {
-    handleApiError(error, "북마크 토글 실패");
+    handleApiError(error, "북마크 추가 실패");
+  }
+};
+
+export const removeBookmark = async (diaryId: number): Promise<void> => {
+  try {
+    await api.delete(`/api/bookmarks/${diaryId}`);
+  } catch (error) {
+    handleApiError(error, "북마크 삭제 실패");
   }
 };

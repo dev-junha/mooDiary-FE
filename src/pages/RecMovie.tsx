@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import basicBookImg from "../assets/basicBookImg.png";
 import {
   getEmotionData,
@@ -21,6 +22,7 @@ interface Category {
 }
 
 export default function RecMovie() {
+  const navigate = useNavigate();
   const [emotionData, setEmotionData] = useState<EmotionData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,20 +66,27 @@ export default function RecMovie() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emotionData]);
 
-  // 카테고리 -> API 매핑
-  const recommendationApiMap: Record<
-    string,
-    () => Promise<Recommendation | null>
-  > = {
-    book: async () => (await createBookRecommendation()) ?? null,
-    movie: async () => (await createMovieRecommendation()) ?? null,
-    music: async () => (await createMusicRecommendation()) ?? null,
-    poem: async () => (await createPoemRecommendation()) ?? null,
-    quote: async () => null,
+  // 카테고리 -> 페이지 라우팅 매핑
+  const categoryRouteMap: Record<string, string> = {
+    book: "/recommendation",
+    movie: "/movies",
+    music: "/music",
+    poem: "/poem",
+    quote: "/phrase",
   };
 
-  // 추천 콘텐츠 로드 (여러 개)
+  // 추천 콘텐츠 로드 (여러 개) 또는 페이지 이동
   const handleCategorySelect = async (category: string) => {
+    // movie 카테고리가 아니면 해당 페이지로 라우팅
+    if (category !== "movie") {
+      const route = categoryRouteMap[category];
+      if (route) {
+        navigate(route);
+      }
+      return;
+    }
+
+    // movie 카테고리인 경우 현재 페이지에서 API 호출
     if (selectedCategory === category && recommendations.length > 0) return;
 
     setSelectedCategory(category);
@@ -86,11 +95,8 @@ export default function RecMovie() {
     setCurrentIndex(0);
 
     try {
-      const loader = recommendationApiMap[category];
-      if (!loader) throw new Error("해당 카테고리의 추천 API가 없습니다.");
-      
       // 여러 개의 추천을 가져오기 (3개)
-      const recommendationPromises = Array(3).fill(null).map(() => loader());
+      const recommendationPromises = Array(3).fill(null).map(() => createMovieRecommendation());
       const results = await Promise.all(recommendationPromises);
       const validResults = results.filter((r): r is Recommendation => r !== null);
       
@@ -123,7 +129,7 @@ export default function RecMovie() {
     { id: "movie", label: "영화", icon: "🎬" },
     { id: "music", label: "음악", icon: "🎵" },
     { id: "poem", label: "시", icon: "📜" },
-    { id: "quote", label: "명언", icon: "💭", disabled: true },
+    { id: "quote", label: "명언", icon: "💭" },
   ];
 
   const getCategoryColor = (category: string): string => {

@@ -48,20 +48,32 @@ export default function Records() {
       }
 
       try {
+        console.log(`🔍 Records 페이지: 사용자 ID ${user.id}의 일기 목록 조회 시작`);
         setLoading(true);
         setError(null);
         const data = await getUserDiaries(user.id);
+        console.log(`📊 Records 페이지: 받아온 일기 개수 = ${data.length}개`);
+        console.log("📝 받아온 일기 데이터:", data);
         setDiaries(data);
       } catch (err) {
-        console.error("일기 목록 조회 실패:", err);
-        setError("일기 목록을 불러올 수 없습니다.");
+        console.error("❌ Records 페이지: 일기 목록 조회 실패:", err);
+        
+        // 인증 에러인 경우
+        if (err instanceof Error && err.message === "로그인이 필요합니다.") {
+          setError("로그인이 필요합니다. 로그인 페이지로 이동합니다.");
+          setTimeout(() => {
+            navigate("/login");
+          }, 2000);
+        } else {
+          setError("일기 목록을 불러올 수 없습니다.");
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchDiaries();
-  }, [user.id]);
+  }, [user.id, navigate]);
 
   // 페이지네이션 계산
   const totalPages = Math.ceil(diaries.length / itemsPerPage);
