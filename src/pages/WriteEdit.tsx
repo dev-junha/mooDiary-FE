@@ -1,34 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PageLayout } from '../components/common/PageLayout'; 
 import { useNavigate } from 'react-router-dom';
-import { saveDraft, analyzeEmotion, submitDiary } from '../lib/apiClient';
-
-// --- [Type Definitions] 데이터 타입 정의 ---
-
-interface SaveDraftResponse {
-  status: string;
-  message: string;
-  draftId: string;
-}
-
-interface EmotionResult {
-  textEmotion: Record<string, number>;
-  faceEmotion: Record<string, number>;
-  combinedEmotion: string;
-  score: number;
-}
-
-interface AnalyzeEmotionResponse {
-  status: string;
-  message: string;
-  data: EmotionResult;
-}
-
-interface SubmitDiaryResponse {
-  status: string;
-  message: string;
-  diaryId: string;
-}
+// [수정] 수정된 API 함수들 import
+import { 
+  createDiary, 
+  updateDiary, 
+  uploadFile, 
+  getDiaryAnalysis, 
+  getUserId,
+  type DiaryDtoResponse,
+  type EmotionAnalysisResponse 
+} from '../lib/apiClient';
 
 interface LoadingState {
   save: boolean;
@@ -56,23 +38,21 @@ const EMOTIONS: EmotionItem[] = [
   { id: 'SAD', label: '우울', boxLeft: '701px', boxTop: '212px', iconLeft: '784px', iconTop: '225px', labelLeft: '766px', labelTop: '244px' },
 ];
 
-// API helpers (saveDraft, analyzeEmotion, submitDiary) are imported from lib/apiClient
-
-// --- [Component] 메인 컴포넌트 ---
 function WriteEdit() {
   const navigate = useNavigate();
 
-  // 1. [Date] 날짜 설정
   const today = new Date();
   const dateString = `${today.getFullYear()} - ${String(today.getMonth() + 1).padStart(2, '0')} - ${String(today.getDate()).padStart(2, '0')}`;
+  const apiDateString = today.toISOString().split('T')[0];
 
-  // 2. [State] 상태 관리
+  const [userId, setUserId] = useState<number | null>(null);
+  const [diaryId, setDiaryId] = useState<string | number | null>(null);
   const [diaryTitle, setDiaryTitle] = useState<string>('');
   const [diaryContent, setDiaryContent] = useState<string>('');
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<EmotionResult | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | undefined>(undefined);
   
   const [loadingState, setLoadingState] = useState<LoadingState>({
     save: false,
@@ -81,14 +61,18 @@ function WriteEdit() {
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  // === [수정된 부분] maxLength 선언 추가 ===
   const minLength = 10;
-  const maxLength = 1000; // 이 부분이 누락되어 에러가 발생했었습니다.
+  const maxLength = 1000;
   
   const isAnyLoading = Object.values(loadingState).some(state => state);
 
-  // --- [Handlers] 기능별 핸들러 ---
+  // [초기화]
+  useEffect(() => {
+    const id = getUserId();
+    setUserId(id);
+  }, []);
+
+  // --- Handlers ---
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -106,6 +90,7 @@ function WriteEdit() {
     e.stopPropagation();
     setImagePreview(null);
     setImageFile(null);
+    setCurrentImageUrl(undefined);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -113,20 +98,53 @@ function WriteEdit() {
     setSelectedEmotion(id);
   };
 
-  const createDiaryFormData = () => {
-    const formData = new FormData();
-    formData.append('date', dateString);
-    formData.append('title', diaryTitle);
-    formData.append('content', diaryContent);
-    
-    if (selectedEmotion) formData.append('selectedEmotion', selectedEmotion);
-    if (imageFile) formData.append('image', imageFile);
-    if (analysisResult) formData.append('analysisData', JSON.stringify(analysisResult));
+  /**
+   * [핵심] 저장/수정 로직
+   * - userId 체크
+   * - diaryId 유무에 따라 createDiary / updateDiary 호출
+   */
+  const performSaveOrUpdate = async (): Promise<{ id: number, emotionAnalysis?: EmotionAnalysisResponse }> => {
+    if (!userId) {
+      const id = getUserId();
+      if (!id) throw new Error("로그인이 필요합니다.");
+    }
 
-    return formData;
+    let response: DiaryDtoResponse;
+
+    try {
+      if (diaryId) {
+        // [수정] Update
+        let finalImageUrl = currentImageUrl;
+
+        // 새 이미지 업로드 필요 시
+        if (imageFile) {
+           finalImageUrl = await uploadFile(imageFile);
+           setCurrentImageUrl(finalImageUrl);
+           setImageFile(null);
+        }
+
+        response = await updateDiary(userId!, diaryId, diaryContent, finalImageUrl);
+      } else {
+        // [생성] Create (이미지 유무는 createDiary 내부에서 분기)
+        response = await createDiary(userId!, diaryContent, imageFile || undefined);
+        
+        if (response.imageUrl) setCurrentImageUrl(response.imageUrl);
+      }
+
+      if (!response || !response.id) {
+        throw new Error("서버로부터 일기 ID를 받아오지 못했습니다.");
+      }
+      
+      setDiaryId(response.id);
+      return { id: response.id, emotionAnalysis: response.emotionAnalysis };
+
+    } catch (error) {
+      console.error("API 요청 실패:", error);
+      throw error;
+    }
   };
 
-  // --- [Actions] 버튼 기능 구현 ---
+  // --- Actions ---
 
   const handleSave = async () => {
     if (isAnyLoading) return;
@@ -136,12 +154,11 @@ function WriteEdit() {
     }
     setLoadingState(prev => ({ ...prev, save: true }));
     try {
-      const formData = createDiaryFormData();
-      const response = await saveDraft(formData);
-      alert(response?.message ?? '임시저장 완료');
+      await performSaveOrUpdate();
+      alert('일기가 저장되었습니다.');
     } catch (error) {
       console.error(error);
-      alert("임시 저장에 실패했습니다.");
+      alert("일기 저장에 실패했습니다.");
     } finally {
       setLoadingState(prev => ({ ...prev, save: false }));
     }
@@ -155,12 +172,20 @@ function WriteEdit() {
     }
     setLoadingState(prev => ({ ...prev, analyze: true }));
     try {
-      const formData = createDiaryFormData();
-      const response = await analyzeEmotion(formData);
-      // response may be { status,message,data } or direct data
-      const data = response?.data ?? response;
-      setAnalysisResult(data.data ?? data);
-      alert(`${response?.message ?? '분석 완료'}\n결과: ${data.data?.combinedEmotion ?? data.combinedEmotion} (점수: ${data.data?.score ?? data.score ?? ''})`);
+      const { id, emotionAnalysis } = await performSaveOrUpdate();
+      
+      let analysisData = emotionAnalysis;
+
+      if (!analysisData) {
+        analysisData = await getDiaryAnalysis(userId!, id);
+      }
+      
+      if (analysisData && analysisData.integratedEmotion) {
+        const { emotion, score } = analysisData.integratedEmotion;
+        alert(`분석 완료!\n감정: ${emotion} (감정 온도: ${score}℃)`);
+      } else {
+        alert("분석 결과가 없습니다.");
+      }
     } catch (error) {
       console.error(error);
       alert("감정 분석 중 오류가 발생했습니다.");
@@ -177,11 +202,9 @@ function WriteEdit() {
     
     setLoadingState(prev => ({ ...prev, complete: true }));
     try {
-      const formData = createDiaryFormData();
-      const response = await submitDiary(formData);
-      alert(response?.message ?? '일기 저장 완료');
-      // after successful submit, navigate to the results page
-      navigate('/results');
+      const { id } = await performSaveOrUpdate();
+      alert('일기 작성이 완료되었습니다.');
+      navigate(`/results`);
     } catch (error) {
       console.error(error);
       alert("일기 저장에 실패했습니다.");
@@ -195,7 +218,7 @@ function WriteEdit() {
       <div className="flex justify-center w-full h-full">
         <div className="relative w-full h-full bg-orange-100/40 overflow-hidden rounded-[10px]">
           
-          {/* === [Section 1] 우측 이미지 업로드 (표지 모양) === */}
+          {/* === [Section 1] 우측 이미지 업로드 === */}
           <div className="w-[685px] h-[552px] left-[168px] top-[100px] absolute overflow-hidden"> 
              {imagePreview ? (
                 <div className="absolute left-[42px] top-[225px] w-[600px] h-[288px] bg-white rounded-lg shadow-md overflow-hidden z-10 border-[3px] border-yellow-400">
@@ -214,15 +237,27 @@ function WriteEdit() {
                   <div className="w-[600px] h-16 left-[42px] top-[132px] absolute text-center justify-center text-yellow-800 text-2xl font-medium font-['Inter'] leading-7">당신의 소중한 순간을 기록해보세요.</div>
                   <div className="w-[600px] h-72 left-[42px] top-[225px] absolute bg-orange-100 rounded-tl-xl rounded-tr-[10px] rounded-bl-md rounded-br-md border-[3px] border-yellow-400 flex items-center justify-center"></div>
                   
+                  {/* 데코레이션 아이콘들 */}
                   <div className="left-[30px] top-[212px] absolute"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#FFBE4D"/><circle cx="14" cy="14" r="12.5" stroke="#FFFAEF" strokeOpacity="0.9" strokeWidth="3"/></svg></div>
                   <div className="left-[620px] top-[212px] absolute"><svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="18" fill="#FFD900"/><circle cx="18" cy="18" r="16.5" stroke="#FFFAEF" strokeOpacity="0.9" strokeWidth="3"/></svg></div>
                   
                   <div className="w-100 h-8 left-[143px] top-[354px] absolute text-center justify-center text-yellow-800 text-2xl font-normal font-['Inter'] leading-7 z-20">오늘의 순간을 담은 사진을 올려보세요.</div>
                   
-                  <div className="w-24 h-24 left-[297px] top-[252px] absolute overflow-hidden z-20">
-                    <svg width="74" height="74" viewBox="0 0 74 74" fill="none"><path d="M63.8333 2.5H10.1667C5.93248 2.5 2.5 5.93248 2.5 10.1667V63.8333C2.5 68.0675 5.93248 71.5 10.1667 71.5H63.8333C68.0675 71.5 71.5 68.0675 71.5 63.8333V10.1667C71.5 5.93248 68.0675 2.5 63.8333 2.5Z" stroke="#FF9326" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    <div className="absolute top-[26px] left-[26px]"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M8.25 14C11.4256 14 14 11.4256 14 8.25C14 5.07436 11.4256 2.5 8.25 2.5C5.07436 2.5 2.5 5.07436 2.5 8.25C2.5 11.4256 5.07436 14 8.25 14Z" stroke="#FF9326" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
-                    <div className="absolute top-[38px] left-[19px]"><svg width="67" height="48" viewBox="0 0 67 48" fill="none"><path d="M63.8333 21.6667L44.6667 2.5L2.5 44.6667" stroke="#FF9326" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
+                  <div className="w-24 h-24 left-[297px] top-[252px] absolute overflow-hidden z-20 flex items-center justify-center">
+                    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" className="absolute">
+                      <rect x="5" y="5" width="70" height="70" rx="10" stroke="#FF9326" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <div className="absolute top-[20px] left-[50%] translate-x-[-50%]">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="7" stroke="#FF9326" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    {/* 내부 산 */}
+                    <div className="absolute bottom-[15px] left-[50%] translate-x-[-50%]">
+                      <svg width="64" height="32" viewBox="0 0 64 32" fill="none">
+                        <path d="M4 28L24 8L44 28L56 16L68 28" stroke="#FF9326" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
                   </div>
                </>
              )}
@@ -281,6 +316,7 @@ function WriteEdit() {
                 placeholder={`오늘 있었던 일, 느낀 감정, 생각들을 자유롭게 적어주세요.\n( 최소 ${minLength}자 / 최대 ${maxLength}자 )`}
                 className="absolute left-[13px] top-[11px] w-[848px] h-[300px] bg-transparent border-none resize-none focus:ring-0 text-orange-800 text-base font-normal font-['Inter'] leading-[42px]"
                 style={{ lineHeight: '42px' }}
+                maxLength={maxLength}
               />
             </div>
 
@@ -340,7 +376,7 @@ function WriteEdit() {
               >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16L21 8V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21Z" stroke="#8E573E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M17 21V13H7V21" stroke="#8E573E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 3V8H15" stroke="#8E573E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   <span className="text-yellow-800 text-2xl font-medium font-['Inter'] capitalize tracking-tight whitespace-nowrap">
-                    {loadingState.save ? "저장 중" : "임시저장"}
+                    {loadingState.save ? "저장 중..." : "임시저장"}
                   </span>
               </button>
               
@@ -352,7 +388,7 @@ function WriteEdit() {
               >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M21 20.9999L16.65 16.6499" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   <span className="text-black text-2xl font-medium font-['Inter'] capitalize tracking-tight whitespace-nowrap">
-                      {loadingState.analyze ? "분석 중" : "분석 시작"}
+                      {loadingState.analyze ? "분석 중..." : "분석 시작"}
                   </span>
               </button>
               
@@ -363,7 +399,7 @@ function WriteEdit() {
                 className="w-[280px] h-12 bg-yellow-50 rounded-[10px] outline outline-2 outline-offset-[-2px] outline-orange-400 flex justify-center items-center gap-2.5 hover:bg-yellow-100 transition-colors disabled:opacity-50"
               >
                   <span className="text-black text-2xl font-medium font-['Inter'] capitalize tracking-tight whitespace-nowrap">
-                    {loadingState.complete ? "전송 중" : "완료"}
+                    {loadingState.complete ? "전송 중..." : "완료"}
                   </span>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke="#212121" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>

@@ -2,7 +2,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { fileURLToPath } from "url";
 import { VitePWA } from "vite-plugin-pwa";
+
+// 2. __dirname을 정의합니다 (ES Modules에서는 기본 제공되지 않으므로)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [
@@ -34,8 +38,9 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(new URL("./src", import.meta.url).pathname),
-      "@shared": path.resolve(new URL("./shared", import.meta.url).pathname),
+      // 3. path.resolve와 __dirname을 사용하여 경로를 다시 설정합니다.
+      "@": path.resolve(__dirname, "src"),
+      "@shared": path.resolve(__dirname, "shared"),
     },
   },
   build: {

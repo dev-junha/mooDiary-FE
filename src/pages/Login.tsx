@@ -24,6 +24,12 @@ const Login: React.FC = () => {
     try {
       const tokens = await login({ email, password });
       saveTokens(tokens);
+      if (tokens.user && tokens.user.id) {
+        localStorage.setItem("userId", String(tokens.user.id));
+        console.log("✅ User ID saved:", tokens.user.id);
+      } else {
+        console.warn("⚠️ User ID not found in login response");
+      }
       authLogin();
       alert("로그인 성공! 🎉");
       navigate("/main");
