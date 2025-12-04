@@ -24,13 +24,18 @@ export default function Bookmark() {
       setIsLoading(true);
       setError(null);
       const data = await getBookmarksWithStats();
-      setBookmarks(data.bookmarks);
-      setBookmarkCount(data.numberOfBookmarkedDiary);
-      setAverageTemp(data.averageTemperature);
-      setTotalDiaryCount(data.numberOfTotalDiary);
+      setBookmarks(data.bookmarks || []);
+      setBookmarkCount(data.numberOfBookmarkedDiary || 0);
+      setAverageTemp(data.averageTemperature || 0);
+      setTotalDiaryCount(data.numberOfTotalDiary || 0);
     } catch (err) {
       setError("북마크를 불러오는데 실패했습니다.");
       console.error(err);
+      // 에러 발생 시 기본값 설정
+      setBookmarks([]);
+      setBookmarkCount(0);
+      setAverageTemp(0);
+      setTotalDiaryCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +53,7 @@ export default function Bookmark() {
     try {
       await deleteDiary(diaryId);
       // 삭제 성공 시 목록에서 제거
-      setBookmarks(bookmarks.filter((b) => b.diaryId !== diaryId));
+      setBookmarks((prev) => (prev || []).filter((b) => b.diaryId !== diaryId));
     } catch (err) {
       alert("일기 삭제에 실패했습니다.");
       console.error(err);
@@ -60,19 +65,56 @@ export default function Bookmark() {
       // 북마크 해제
       await removeBookmark(diaryId);
       // UI에서 제거하고 통계 업데이트
-      setBookmarks(bookmarks.filter((b) => b.diaryId !== diaryId));
-      setBookmarkCount(prev => prev - 1);
+      setBookmarks((prev) => (prev || []).filter((b) => b.diaryId !== diaryId));
+      setBookmarkCount(prev => Math.max(0, prev - 1));
     } catch (err) {
       alert("북마크 해제에 실패했습니다.");
       console.error(err);
     }
   };
 
-  // 날짜 포맷팅 함수 (number[] 형태: [year, month, day, hour, minute, second])
-  const formatDate = (dateArray: number[]) => {
-    if (!dateArray || dateArray.length < 3) return "";
-    const [year, month, day] = dateArray;
-    return `${year}.${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')}`;
+  // 날짜 포맷팅 함수 (ISO 8601 문자열 또는 LocalDateTime 형식 처리)
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+    try {
+      // LocalDateTime 형식 (예: "2024-01-15T10:30:00" 또는 "2024-01-15T10:30:00.123")
+      // 또는 이미 파싱된 날짜 객체
+      let date: Date;
+      
+      if (typeof dateString === 'string') {
+        // ISO 형식이 아닌 경우를 대비해 여러 형식 시도
+        date = new Date(dateString);
+        
+        // Invalid Date 체크
+        if (isNaN(date.getTime())) {
+          // 다른 형식 시도: "2024-01-15 10:30:00" 형식
+          const normalized = dateString.replace(' ', 'T');
+          date = new Date(normalized);
+          
+          if (isNaN(date.getTime())) {
+            console.error("날짜 파싱 실패:", dateString);
+            return "";
+          }
+        }
+      } else {
+        return "";
+      }
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      // NaN 체크
+      if (isNaN(year) || isNaN(month) || isNaN(day)) {
+        console.error("날짜 값이 유효하지 않습니다:", dateString);
+        return "";
+      }
+      
+      return `${year}.${month}.${day}`;
+    } catch (error) {
+      console.error("날짜 파싱 오류:", error, dateString);
+      return "";
+    }
   };
 
   if (isLoading) {
@@ -133,14 +175,14 @@ export default function Bookmark() {
 
       {/* 북마크된 일기 카드 섹션 */}
       <div className="mt-16 pb-16">
-        {bookmarks.length === 0 ? (
+        {!bookmarks || bookmarks.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-2xl text-gray-500 mb-4">북마크한 일기가 없습니다</p>
             <p className="text-gray-400">마음에 드는 일기를 북마크해보세요!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-[1200px] mx-auto px-4">
-            {bookmarks.map((bookmark, index) => (
+            {(bookmarks || []).map((bookmark, index) => (
               <div
                 key={`${bookmark.diaryId}-${index}`}
                 className="relative bg-[#FFF9E6] rounded-lg p-6 shadow-md border-2 border-[#FFD66B] hover:shadow-lg transition-shadow"

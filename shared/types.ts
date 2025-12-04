@@ -115,7 +115,7 @@ export interface BookmarkItem {
   diaryId: number;
   content: string;
   temperature: number;
-  createdAt: number[]; // [year, month, day, hour, minute, second]
+  createdAt: string; // ISO 8601 형식 (예: "2024-01-15T10:30:00")
 }
 
 export interface BookmarkWithStats {
@@ -123,5 +123,33 @@ export interface BookmarkWithStats {
   numberOfTotalDiary: number;
   averageTemperature: number;
   bookmarks: BookmarkItem[];
+}
+
+// 일기 분석 요약 타입
+export interface DiarySummary {
+  diaryId: number;
+  summary: string;
+  mainEmotion: string;
+  keywords: string[];
+  createdAt: string;
+}
+
+// 메인 페이지 통합 조회 응답 타입
+export interface MainPageData {
+  userProfile: UserProfile;
+  todayDiary: DiaryResponse | null;
+  recentDiaries: DiaryResponse[];
+}
+
+// 토큰 갱신 요청 타입
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+// API 테스트 응답 타입
+export interface ApiTestResponse {
+  status: string;
+  message: string;
+  timestamp?: string;
 }
 

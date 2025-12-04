@@ -16,6 +16,7 @@ import RecPoem from "./pages/RecPoem";
 import RecPhrase from "./pages/RecPhrase";
 import WriteEdit from "./pages/WriteEdit";
 import Records from "./pages/Records";
+import DiaryDetail from "./pages/DiaryDetail";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Onboarding from "./pages/Onboarding";
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/recommendation" element={<RecBook />} />
           <Route path="/records" element={<Records />} />
+          <Route path="/diary" element={<DiaryDetail />} />
           <Route path="/movies" element={<RecMovie />} />
           <Route path="/music" element={<RecMusic />} />
           <Route path="/poem" element={<RecPoem />} />

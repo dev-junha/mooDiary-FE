@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "../components/common/PageLayout";
-import { getUserDiaries, deleteDiary } from "@/lib/apiClient";
+import { getUserDiaries, deleteDiary, addBookmark, getAllBookmarks, type DiaryDtoResponse } from "@/lib/apiClient";
 import { useUserData } from "@/hooks/useUserData";
-import type { DiaryResponse } from "@shared/types";
+import { Bookmark } from "lucide-react";
 
 // 감정별 온도 및 진행도 매핑
 const EMOTION_MAPPING: Record<string, { temperature: string; progress: number }> = {
@@ -33,11 +33,28 @@ const getTitleFromContent = (content: string): string => {
 export default function Records() {
   const navigate = useNavigate();
   const { user } = useUserData();
-  const [diaries, setDiaries] = useState<DiaryResponse[]>([]);
+  const [diaries, setDiaries] = useState<DiaryDtoResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<number>>(new Set());
   const itemsPerPage = 6;
+
+  // 북마크 목록 불러오기
+  useEffect(() => {
+    const fetchBookmarks = async () => {
+      try {
+        const bookmarks = await getAllBookmarks();
+        const bookmarkIdSet = new Set(bookmarks.map(b => b.diaryId));
+        setBookmarkedIds(bookmarkIdSet);
+      } catch (err) {
+        console.error("북마크 목록 조회 실패:", err);
+        // 북마크 목록 조회 실패는 치명적이지 않으므로 계속 진행
+      }
+    };
+
+    fetchBookmarks();
+  }, []);
 
   // 일기 목록 가져오기
   useEffect(() => {
@@ -109,6 +126,17 @@ export default function Records() {
 
   const handleWriteNew = () => {
     navigate("/write");
+  };
+
+  const handleAddBookmark = async (diaryId: number) => {
+    try {
+      await addBookmark(diaryId);
+      setBookmarkedIds((prev) => new Set(prev).add(diaryId));
+      alert("북마크에 추가되었습니다!");
+    } catch (err) {
+      console.error("북마크 추가 실패:", err);
+      alert("북마크 추가에 실패했습니다.");
+    }
   };
 
   // 로딩 중
@@ -191,14 +219,35 @@ export default function Records() {
                 return (
                   <div
                     key={diary.id}
-                    className="bg-[#FFFEF9] rounded-lg p-6 shadow-md border-4 border-[#FFD66B] relative"
+                    className="bg-[#FFFEF9] rounded-lg p-6 shadow-md border-4 border-[#FFD66B] relative cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => navigate(`/diary?id=${diary.id}`)}
                   >
-                    {/* 기록 표시 아이콘 */}
-                    <div className="absolute top-4 right-4 flex items-center gap-1">
-                      <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">✓</span>
+                    {/* 우측 상단 버튼 그룹 */}
+                    <div className="absolute top-4 right-4 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      {/* 북마크 버튼 */}
+                      <button
+                        onClick={() => handleAddBookmark(diary.id)}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                          bookmarkedIds.has(diary.id)
+                            ? "bg-yellow-400 hover:bg-yellow-500"
+                            : "bg-gray-200 hover:bg-gray-300"
+                        }`}
+                        title={bookmarkedIds.has(diary.id) ? "북마크됨" : "북마크 추가"}
+                      >
+                        <Bookmark
+                          className={`w-4 h-4 ${
+                            bookmarkedIds.has(diary.id) ? "text-yellow-800 fill-yellow-800" : "text-gray-600"
+                          }`}
+                          fill={bookmarkedIds.has(diary.id) ? "currentColor" : "none"}
+                        />
+                      </button>
+                      {/* 기록 표시 아이콘 */}
+                      <div className="flex items-center gap-1">
+                        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">✓</span>
+                        </div>
+                        <span className="text-sm text-gray-600">기록</span>
                       </div>
-                      <span className="text-sm text-gray-600">기록</span>
                     </div>
 
                     {/* 제목 (첫 50자) */}
@@ -247,7 +296,7 @@ export default function Records() {
                     </div>
 
                     {/* 버튼 그룹 */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => handleEdit(diary.id)}
                         className="flex-1 py-2 px-4 bg-white border-2 border-[#FFD66B] text-gray-700 rounded-md hover:bg-[#FFF9E6] transition-colors text-sm font-medium"

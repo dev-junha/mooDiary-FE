@@ -131,25 +131,25 @@ export const deleteDiary = async (diaryId: number): Promise<void> => {
 
 export const getBookmarksWithStats = async (): Promise<BookmarkWithStats> => {
   try {
-    const response = await api.get<BookmarkWithStats>("/bookmarks/registered");
+    const response = await api.get<BookmarkWithStats>("/api/bookmarks/registered");
     return response.data;
   } catch (error) { throw error; }
 };
 
 export const getAllBookmarks = async (): Promise<BookmarkItem[]> => {
   try {
-    const response = await api.get<BookmarkItem[]>("/bookmarks/all");
+    const response = await api.get<BookmarkItem[]>("/api/bookmarks/all");
     return response.data;
   } catch (error) { return []; }
 };
 
 export const addBookmark = async (diaryId: number): Promise<void> => {
-  try { await api.post(`/bookmarks/${diaryId}`); } 
+  try { await api.post(`/api/bookmarks/${diaryId}`); } 
   catch (error) { handleApiError(error, "북마크 추가 실패"); }
 };
 
 export const removeBookmark = async (diaryId: number): Promise<void> => {
-  try { await api.delete(`/bookmarks/${diaryId}`); } 
+  try { await api.delete(`/api/bookmarks/${diaryId}`); } 
   catch (error) { handleApiError(error, "북마크 삭제 실패"); }
 };
 
@@ -304,6 +304,110 @@ export const getUserId = (): number => {
   const storedId = localStorage.getItem('userId');
   if (storedId) return parseInt(storedId, 10);
   return 1; 
+};
+
+// ============================================================================
+// [NEW APIs] 추가된 API 함수들
+// ============================================================================
+
+// 메인 페이지 통합 조회 (테스트 엔드포인트)
+export interface MainTestResponse {
+  userProfile: UserProfile;
+  todayDiary: DiaryResponse | null;
+  recentDiaries: DiaryResponse[];
+}
+
+export const getMainTest = async (): Promise<MainTestResponse> => {
+  try {
+    const response = await api.get<MainTestResponse>("/main/test");
+    return response.data;
+  } catch (error) { handleApiError(error, "메인 페이지 통합 조회 실패"); }
+};
+
+// 특정 북마크 조회
+export const getBookmarkById = async (diaryId: number): Promise<BookmarkItem> => {
+  try {
+    const response = await api.get<BookmarkItem>(`/api/bookmarks/${diaryId}`);
+    return response.data;
+  } catch (error) { handleApiError(error, "북마크 조회 실패"); }
+};
+
+// 사용자별 일기 목록 조회 (쿼리 파라미터 기반)
+export const getDiaries = async (userId?: number): Promise<DiaryDtoResponse[]> => {
+  try {
+    const response = await api.get<any>("/diaries", { 
+      params: userId ? { userId } : undefined 
+    });
+    const data = response.data;
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.content)) return data.content;
+    return [];
+  } catch (error) { 
+    console.error("일기 목록 조회 실패:", error);
+    return []; 
+  }
+};
+
+// 일기 분석 요약 조회
+export interface DiarySummaryResponse {
+  diaryId: number;
+  summary: string;
+  mainEmotion: string;
+  keywords: string[];
+  createdAt: string;
+}
+
+export const getDiarySummary = async (diaryId: number | string): Promise<DiarySummaryResponse> => {
+  try {
+    const response = await api.get<DiarySummaryResponse>(`/diaries/${diaryId}/summary`);
+    return response.data;
+  } catch (error) { handleApiError(error, "일기 분석 요약 조회 실패"); }
+};
+
+// 특정 날짜 일기 조회
+export const getDiariesByDate = async (userId: number, date: string): Promise<DiaryDtoResponse[]> => {
+  try {
+    const response = await api.get<any>(`/diaries/user/${userId}/date`, {
+      params: { date }
+    });
+    const data = response.data;
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.content)) return data.content;
+    return [];
+  } catch (error) { 
+    console.error("특정 날짜 일기 조회 실패:", error);
+    return []; 
+  }
+};
+
+// 감정별 일기 조회
+export const getDiariesByEmotion = async (userId: number, emotion: string): Promise<DiaryDtoResponse[]> => {
+  try {
+    const response = await api.get<any>(`/diaries/user/${userId}/emotion/${emotion}`);
+    const data = response.data;
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.content)) return data.content;
+    return [];
+  } catch (error) { 
+    console.error("감정별 일기 조회 실패:", error);
+    return []; 
+  }
+};
+
+// 파일 다운로드 URL 생성
+export const getFileDownloadUrl = (filename: string): string => {
+  const baseUrl = api.defaults.baseURL || "";
+  return `${baseUrl}/files/download/${filename}`;
+};
+
+// 파일 다운로드 (Blob 반환)
+export const downloadFile = async (filename: string): Promise<Blob> => {
+  try {
+    const response = await api.get<Blob>(`/files/download/${filename}`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  } catch (error) { handleApiError(error, "파일 다운로드 실패"); }
 };
 
 // [LEGACY Stubs] WriteEdit 호환성 유지용 (실제 사용은 위 함수들로 대체됨)

@@ -106,6 +106,62 @@ export const socialLogin = async (userID: number): Promise<AuthTokens> => {
   }
 };
 
+/**
+ * 토큰 갱신
+ * POST /api/users/refresh
+ */
+export const refreshToken = async (refreshTokenValue: string): Promise<AuthTokens> => {
+  try {
+    const response = await fetch(`${API_BASE}/api/users/refresh`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ refreshToken: refreshTokenValue }),
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new AuthError(`토큰 갱신 실패: ${errorText}`);
+    }
+
+    const data: AuthTokens = await response.json();
+    return data;
+  } catch (error) {
+    if (error instanceof AuthError) {
+      throw error;
+    }
+    throw new AuthError("토큰 갱신 중 오류가 발생했습니다.");
+  }
+};
+
+/**
+ * 사용자 API 테스트 엔드포인트
+ * GET /api/users/test
+ */
+export const testUsersApi = async (): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await fetch(`${API_BASE}/api/users/test`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new AuthError(`테스트 API 호출 실패: ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    if (error instanceof AuthError) {
+      throw error;
+    }
+    throw new AuthError("테스트 API 호출 중 오류가 발생했습니다.");
+  }
+};
+
 export const saveTokens = (tokens: AuthTokens): void => {
   localStorage.setItem("accessToken", tokens.accessToken);
   localStorage.setItem("refreshToken", tokens.refreshToken);
