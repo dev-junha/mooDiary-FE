@@ -76,7 +76,9 @@ const Register: React.FC = () => {
             <h1 className="text-[28px] font-semibold text-[#b86b3b] mb-2 flex items-center">
               <img src={bookIcon} alt="check" className="w-8 h-8 mr-2" />
               mooDiary
+              {/*
               <span className="ml-1 text-red-500">❤️</span>
+              */}
             </h1>
             <p className="text-center text-gray-700 mt-4 leading-relaxed">
               감정 일기장에<br />오신 것을 환영합니다
@@ -85,11 +87,13 @@ const Register: React.FC = () => {
               당신의 뜻깊은 하루를 기록해보세요
             </p>
 
+            {/*
             <div className="w-28 h-28 mt-10 rounded-full flex items-center justify-center bg-[#ffd6b3]">
               <div className="w-16 h-16 bg-[#ff8c66] rounded-full flex items-center justify-center text-2xl">
                 ❤️
               </div>
             </div>
+            */}
           </div>
 
           {/* 오른쪽 영역 */}
