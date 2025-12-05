@@ -64,7 +64,7 @@ export default function DiaryDetail() {
       try {
         setLoading(true);
         setError(null);
-        const data = await getDiaryById(userId, diaryId);
+        const data = await getDiaryById(diaryId);
         setDiary(data);
       } catch (err) {
         console.error("일기 조회 실패:", err);

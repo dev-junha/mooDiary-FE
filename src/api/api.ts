@@ -19,17 +19,25 @@ import {
   getBookmarkById,
   addBookmark,
   removeBookmark,
-  // 일기 API
+  // 일기 API (새로운 API 문서 기반)
   createDiary,
+  createDiaryWithImage,
+  createDiaryLegacy,
   updateDiary,
   deleteDiary,
   getDiaryById,
   getDiaryAnalysis,
   getDiarySummary,
   getDiaries,
+  getUserDiariesPaginated,
   getUserDiaries,
-  getDiariesByDate,
+  getDiaryByDate,
   getDiariesByEmotion,
+  // 타입 export
+  type DiaryDtoResponse,
+  type EmotionAnalysisResponse,
+  type AnalysisSummaryResponse,
+  type Page,
   // 파일 API
   uploadFile,
   downloadFile,
@@ -72,15 +80,26 @@ export {
 // 일기 API
 export {
   createDiary,
+  createDiaryWithImage,
+  createDiaryLegacy,
   updateDiary,
   deleteDiary,
   getDiaryById,
   getDiaryAnalysis,
   getDiarySummary,
   getDiaries,
+  getUserDiariesPaginated,
   getUserDiaries,
-  getDiariesByDate,
+  getDiaryByDate,
   getDiariesByEmotion,
+};
+
+// 일기 API 타입
+export type {
+  DiaryDtoResponse,
+  EmotionAnalysisResponse,
+  AnalysisSummaryResponse,
+  Page,
 };
 
 // 파일 API

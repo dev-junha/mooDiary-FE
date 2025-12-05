@@ -69,9 +69,11 @@ export default function Records() {
         setLoading(true);
         setError(null);
         const data = await getUserDiaries(user.id);
-        console.log(`📊 Records 페이지: 받아온 일기 개수 = ${data.length}개`);
-        console.log("📝 받아온 일기 데이터:", data);
-        setDiaries(data);
+        // data가 배열인지 확인하고, 아니면 빈 배열로 처리
+        const diariesArray = Array.isArray(data) ? data : [];
+        console.log(`📊 Records 페이지: 받아온 일기 개수 = ${diariesArray.length}개`);
+        console.log("📝 받아온 일기 데이터:", diariesArray);
+        setDiaries(diariesArray);
       } catch (err) {
         console.error("❌ Records 페이지: 일기 목록 조회 실패:", err);
         

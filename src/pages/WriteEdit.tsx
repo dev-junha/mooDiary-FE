@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 // [수정] 수정된 API 함수들 import
 import { 
   createDiary, 
+  createDiaryWithImage,
   updateDiary, 
   uploadFile, 
   getDiaryAnalysis, 
@@ -123,10 +124,16 @@ function WriteEdit() {
            setImageFile(null);
         }
 
-        response = await updateDiary(userId!, diaryId, diaryContent, finalImageUrl);
+        response = await updateDiary(diaryId, diaryContent, finalImageUrl);
       } else {
-        // [생성] Create (이미지 유무는 createDiary 내부에서 분기)
-        response = await createDiary(userId!, diaryContent, imageFile || undefined);
+        // [생성] Create
+        if (imageFile) {
+          // 이미지 파일이 있으면 createDiaryWithImage 사용
+          response = await createDiaryWithImage(diaryContent, imageFile);
+        } else {
+          // 이미지 URL이 있으면 createDiary에 imageUrl 전달
+          response = await createDiary(diaryContent, currentImageUrl || undefined);
+        }
         
         if (response.imageUrl) setCurrentImageUrl(response.imageUrl);
       }
@@ -177,7 +184,7 @@ function WriteEdit() {
       let analysisData = emotionAnalysis;
 
       if (!analysisData) {
-        analysisData = await getDiaryAnalysis(userId!, id);
+        analysisData = await getDiaryAnalysis(id);
       }
       
       if (analysisData && analysisData.integratedEmotion) {
