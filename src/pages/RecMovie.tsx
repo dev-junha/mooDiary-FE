@@ -340,14 +340,14 @@ export default function RecMovie() {
                   </div>
                 </div>
                 {/* 작품 설명 섹션 */}
-                <div className="flex-1 bg-[#FFFEF5] p-6 rounded-lg shadow-md border border-[#F4D03F]">
+                <div className="flex-1 bg-[#FFFEF5] p-6 rounded-lg shadow-md border border-[#F4D03F] flex flex-col">
                   <div className="flex items-center gap-2 mb-6">
                     <span className="text-2xl">📖</span>
                     <h3 className="text-xl font-bold text-[#7D4D37]">
                       작품 설명
                     </h3>
                   </div>
-                  <div className="text-base text-[#7D4D37] leading-relaxed space-y-3">
+                  <div className="text-base text-[#7D4D37] leading-relaxed space-y-3 overflow-y-auto max-h-[500px] pr-2">
                     {recommendation.content ? (
                       <div className="whitespace-pre-line">
                         {recommendation.content.split("\n").map((line, idx) => (
@@ -412,9 +412,11 @@ export default function RecMovie() {
                     제목: {recommendation.title || "알 수 없음"}
                   </p>
                 </div>
-                <p className="text-base text-[#7D4D37] leading-relaxed whitespace-pre-line">
-                  {recommendation.content || "추천 콘텐츠가 준비되었습니다."}
-                </p>
+                <div className="overflow-y-auto max-h-[400px] pr-2">
+                  <p className="text-base text-[#7D4D37] leading-relaxed whitespace-pre-line">
+                    {recommendation.content || "추천 콘텐츠가 준비되었습니다."}
+                  </p>
+                </div>
               </div>
             )}
           </div>

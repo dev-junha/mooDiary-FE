@@ -169,7 +169,7 @@ export default function Index() {
               ) : recentDiaries.length > 0 ? (
                 <>
                   <div className="w-full max-w-[700px] mx-auto flex justify-center items-center gap-8 mt-16 flex-wrap">
-                    {recentDiaries.map((diary) => {
+                    {recentDiaries.slice(0, 4).map((diary) => {
                       const emotion = diary.emotionAnalysis?.integratedEmotion?.emotion || "NEUTRAL";
                       const emoji = EMOTION_EMOJI[emotion] || "😐";
                       
@@ -181,7 +181,7 @@ export default function Index() {
                             backgroundImage: `url(${recordBg})`,
                             backgroundSize: "contain",
                           }}
-                          onClick={() => navigate(`/write?id=${diary.id}`)}
+                          onClick={() => navigate(`/diary?id=${diary.id}`)}
                         >
                           <div className="mt-2 self-stretch text-neutral-800 text-[22px] font-semibold font-['Inter'] capitalize tracking-tight">
                             <span className="text-[#9A623D] font-normal">

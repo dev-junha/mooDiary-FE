@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { PageLayout } from "@/components/common/PageLayout";
-import { getDiaryById, getUserId, deleteDiary, updateDiary, type DiaryDtoResponse } from "@/lib/apiClient";
+import {
+  getDiaryById,
+  getUserId,
+  deleteDiary,
+  updateDiary,
+  type DiaryDtoResponse,
+} from "@/lib/apiClient";
 import { useUserData } from "@/hooks/useUserData";
 import { ArrowLeft, Edit, Trash2, Check } from "lucide-react";
 
@@ -30,40 +36,40 @@ const formatDate = (dateString: string | Date | null | undefined): string => {
       date = dateString;
     } else {
       // 문자열인 경우에만 처리
-      if (typeof dateString !== 'string') {
+      if (typeof dateString !== "string") {
         return getTodayDate();
       }
-      
+
       date = new Date(dateString);
-      
+
       // 유효하지 않은 날짜인지 확인
       if (isNaN(date.getTime())) {
         // 다른 형식 시도: 공백을 T로 변환
-        const normalized = dateString.replace(' ', 'T');
+        const normalized = dateString.replace(" ", "T");
         date = new Date(normalized);
-        
+
         // 여전히 유효하지 않으면 오늘 날짜 사용
         if (isNaN(date.getTime())) {
           return getTodayDate();
         }
       }
     }
-    
+
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
     const hours = date.getHours();
     const minutes = date.getMinutes();
-    
+
     // NaN 체크 - 유효하지 않으면 오늘 날짜 사용
     if (isNaN(year) || isNaN(month) || isNaN(day)) {
       return getTodayDate();
     }
-    
+
     // hours와 minutes가 NaN이면 0으로 설정
     const h = isNaN(hours) ? 0 : hours;
     const min = isNaN(minutes) ? 0 : minutes;
-    
+
     return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")} ${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
   } catch (error) {
     // 오류 발생 시 오늘 날짜 사용 (에러 로그 제거)
@@ -111,7 +117,10 @@ const translateEmotion = (emotion: string | undefined): string => {
 };
 
 // 숫자 포맷팅 함수 (NaN 방지)
-const formatNumber = (value: number | undefined | null, decimals: number = 1): string => {
+const formatNumber = (
+  value: number | undefined | null,
+  decimals: number = 1,
+): string => {
   if (value === undefined || value === null || isNaN(value)) {
     return "N/A";
   }
@@ -141,6 +150,7 @@ export default function DiaryDetail() {
   const [saving, setSaving] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const titleCursorPositionRef = useRef<number>(0);
+  const originalTitleRef = useRef<string>(""); // 원본 제목 저장
 
   const diaryId = searchParams.get("id");
 
@@ -160,7 +170,9 @@ export default function DiaryDetail() {
         const data = await getDiaryById(diaryId);
         setDiary(data);
         setEditedContent(data.content || "");
-        setEditedTitle(getTitleFromContent(data.content || ""));
+        const initialTitle = getTitleFromContent(data.content || "");
+        setEditedTitle(initialTitle);
+        originalTitleRef.current = initialTitle; // 원본 제목 저장
       } catch (err) {
         console.error("일기 조회 실패:", err);
         setError("일기를 불러올 수 없습니다.");
@@ -174,7 +186,11 @@ export default function DiaryDetail() {
 
   // 제목 수정 시 커서 위치 복원
   useEffect(() => {
-    if (isEditing && titleInputRef.current && titleCursorPositionRef.current > 0) {
+    if (
+      isEditing &&
+      titleInputRef.current &&
+      titleCursorPositionRef.current > 0
+    ) {
       const position = titleCursorPositionRef.current;
       titleInputRef.current.setSelectionRange(position, position);
     }
@@ -201,23 +217,16 @@ export default function DiaryDetail() {
 
     try {
       setSaving(true);
-      // 제목이 변경된 경우, editedContent의 첫 부분(제목 부분)을 교체
-      let finalContent = editedContent;
-      const originalContent = diary.content || "";
-      const originalTitle = getTitleFromContent(originalContent);
-      
-      if (editedTitle !== originalTitle && editedTitle.trim()) {
-        // 원본 content에서 제목 부분의 실제 길이 계산 (최대 50자, "..." 제외)
-        const titleLength = originalContent.length > 50 ? 50 : originalContent.length;
-        // editedContent의 첫 부분을 새 제목으로 교체
-        const contentAfterTitle = editedContent.substring(titleLength);
-        finalContent = editedTitle + contentAfterTitle;
-      }
-      
-      const updatedDiary = await updateDiary(diaryId, finalContent, diary.imageUrl);
+      // 내용만 수정 (제목 변경 로직 제거)
+      const updatedDiary = await updateDiary(
+        diaryId,
+        editedContent,
+        diary.imageUrl,
+      );
       setDiary(updatedDiary);
       setEditedContent(updatedDiary.content || "");
-      setEditedTitle(getTitleFromContent(updatedDiary.content || ""));
+      // 제목은 원본 제목을 유지 (내용 수정과 독립적)
+      // 제거: setEditedTitle(originalTitleRef.current); // 제목 리셋 방지 - 수정된 제목 유지
       setIsEditing(false);
       alert("일기가 수정되었습니다.");
     } catch (err) {
@@ -259,7 +268,9 @@ export default function DiaryDetail() {
       <PageLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <p className="text-lg text-red-500 mb-4">{error || "일기를 찾을 수 없습니다."}</p>
+            <p className="text-lg text-red-500 mb-4">
+              {error || "일기를 찾을 수 없습니다."}
+            </p>
             <button
               onClick={handleBack}
               className="px-6 py-2 bg-[#8E573E] text-white rounded-md hover:bg-[#7A4A35] transition-colors"
@@ -289,7 +300,9 @@ export default function DiaryDetail() {
           <div className="flex items-start justify-between gap-6">
             <div className="flex-1 min-w-0">
               <div className="mb-3">
-                <span className="text-4xl font-['jsMath-cmti10'] text-[#8E573E] font-bold">제목</span>
+                <span className="text-4xl font-['jsMath-cmti10'] text-[#8E573E] font-bold">
+                  제목
+                </span>
               </div>
               {isEditing ? (
                 <input
@@ -303,7 +316,7 @@ export default function DiaryDetail() {
                     // 커서 위치 저장 (입력된 문자 수를 고려)
                     const oldValue = editedTitle;
                     let newCursorPosition = cursorPosition;
-                    
+
                     // 삭제가 아닌 경우 (입력인 경우)
                     if (newValue.length > oldValue.length) {
                       newCursorPosition = cursorPosition;
@@ -311,25 +324,29 @@ export default function DiaryDetail() {
                       // 삭제인 경우
                       newCursorPosition = Math.max(0, cursorPosition);
                     }
-                    
+
                     titleCursorPositionRef.current = newCursorPosition;
                     setEditedTitle(newValue);
                   }}
                   onKeyDown={(e) => {
                     // Enter 키로 줄바꿈 방지
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                     }
                   }}
-                  className="w-full text-4xl font-['jsMath-cmti10'] text-[#8E573E] font-bold mb-3 p-4 border-2 border-[#FFD66B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8E573E] whitespace-nowrap overflow-hidden"
+                  className="w-full text-4xl font-['jsMath-cmti10'] text-[#8E573E] font-bold mb-3 p-4 border-2 border-[#FFD66B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8E573E] overflow-x-auto"
                   placeholder="제목을 입력하세요..."
                 />
               ) : (
                 <h1 className="text-4xl font-['jsMath-cmti10'] text-[#8E573E] font-bold mb-3 break-words">
-                  {getTitleFromContent(diary.content)}
+                  {editedTitle ||
+                    originalTitleRef.current ||
+                    getTitleFromContent(diary.content)}
                 </h1>
               )}
-              <p className="text-lg text-gray-500">{formatDate(diary.createdAt)}</p>
+              <p className="text-lg text-gray-500">
+                {formatDate(diary.createdAt)}
+              </p>
             </div>
             <div className="flex gap-2 flex-shrink-0 pt-8">
               {isEditing ? (
@@ -406,43 +423,53 @@ export default function DiaryDetail() {
           {/* 감정 분석 결과 */}
           {diary.emotionAnalysis && diary.emotionAnalysis.textEmotion && (
             <div className="border-t-2 border-[#FFD66B] pt-6">
-              <h3 className="text-xl font-semibold text-[#8E573E] mb-4">감정 분석</h3>
-              
+              <h3 className="text-xl font-semibold text-[#8E573E] mb-4">
+                감정 분석
+              </h3>
+
               {/* 오늘의 감정 */}
               <div className="mb-4 p-4 bg-[#FFF9E6] rounded-lg">
                 <p className="text-sm text-gray-600 mb-3">오늘의 감정</p>
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">
-                    {EMOTION_EMOJI[diary.emotionAnalysis.textEmotion.emotion?.toUpperCase() || "NEUTRAL"] || "😐"}
+                    {EMOTION_EMOJI[
+                      diary.emotionAnalysis.textEmotion.emotion?.toUpperCase() ||
+                        "NEUTRAL"
+                    ] || "😐"}
                   </span>
                   <div>
                     <p className="text-lg font-semibold text-gray-800">
-                      {translateEmotion(diary.emotionAnalysis.textEmotion.emotion)}
+                      {translateEmotion(
+                        diary.emotionAnalysis.textEmotion.emotion,
+                      )}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
-                      온도: {getEmotionTemperature(diary.emotionAnalysis.textEmotion.score)}
+                      온도:{" "}
+                      {getEmotionTemperature(
+                        diary.emotionAnalysis.textEmotion.score,
+                      )}
                     </p>
                   </div>
                 </div>
               </div>
 
               {/* 키워드 */}
-              {diary.emotionAnalysis.keywords && diary.emotionAnalysis.keywords.length > 0 && (
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 mb-2">주요 키워드</p>
-                  <div className="flex flex-wrap gap-2">
-                    {diary.emotionAnalysis.keywords.map((keyword, idx) => (
-                      <span
-                        key={idx}
-                        className="px-3 py-1 bg-[#FFF9E6] text-[#8E573E] text-sm rounded-full border border-[#FFD66B]"
-                      >
-                        #{keyword}
-                      </span>
-                    ))}
+              {diary.emotionAnalysis.keywords &&
+                diary.emotionAnalysis.keywords.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 mb-2">주요 키워드</p>
+                    <div className="flex flex-wrap gap-2">
+                      {diary.emotionAnalysis.keywords.map((keyword, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 bg-[#FFF9E6] text-[#8E573E] text-sm rounded-full border border-[#FFD66B]"
+                        >
+                          #{keyword}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-
+                )}
             </div>
           )}
         </div>
@@ -450,4 +477,3 @@ export default function DiaryDetail() {
     </PageLayout>
   );
 }
-
