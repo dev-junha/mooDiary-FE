@@ -192,6 +192,10 @@ export const getAccessToken = (): string | null => {
   return localStorage.getItem("accessToken");
 };
 
+export const getRefreshToken = (): string | null => {
+  return localStorage.getItem("refreshToken");
+};
+
 export const getUserInfo = (): User | null => {
   const userStr = localStorage.getItem("user");
   if (!userStr) return null;

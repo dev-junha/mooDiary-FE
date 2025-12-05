@@ -1,4 +1,8 @@
-import axios, { AxiosInstance, AxiosError } from "axios";
+import axios, {
+  AxiosInstance,
+  AxiosError,
+  InternalAxiosRequestConfig,
+} from "axios";
 import type {
   Recommendation,
   EmotionData,
@@ -9,7 +13,13 @@ import type {
   BookmarkItem,
   BookmarkWithStats,
 } from "@shared/types";
-import { getAccessToken } from "./auth";
+import {
+  getAccessToken,
+  getRefreshToken,
+  refreshToken,
+  saveTokens,
+  clearTokens,
+} from "./auth";
 
 /**
  * API Base URL 설정
@@ -31,11 +41,35 @@ export const api: AxiosInstance = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// 토큰 갱신 중인지 추적하는 플래그
+let isRefreshing = false;
+// 토큰 갱신 대기 중인 요청들을 저장
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (error?: any) => void;
+}> = [];
+
+// 대기 중인 요청들을 처리하는 함수
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 // Request interceptor
 api.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     const token = getAccessToken();
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      // 토큰이 이미 "Bearer "로 시작하는지 확인
+      const authToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+      config.headers.Authorization = authToken;
+    }
     return config;
   },
   (error) => Promise.reject(error),
@@ -44,7 +78,87 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
+
+    // 401 에러이고, 아직 재시도하지 않은 요청인 경우
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // 이미 토큰 갱신 중인 경우, 대기열에 추가
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = token as string;
+            }
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshTokenValue = getRefreshToken();
+      if (!refreshTokenValue) {
+        // refreshToken이 없으면 로그인 페이지로 리다이렉트
+        clearTokens();
+        processQueue(new Error("Refresh token이 없습니다."), null);
+        isRefreshing = false;
+
+        // 로그인 페이지로 리다이렉트
+        if (
+          typeof window !== "undefined" &&
+          !window.location.pathname.includes("/login")
+        ) {
+          window.location.href = "/login";
+        }
+        return Promise.reject(error);
+      }
+
+      try {
+        // 토큰 갱신 시도
+        const newTokens = await refreshToken(refreshTokenValue);
+        saveTokens(newTokens);
+
+        // 새로운 토큰으로 Authorization 헤더 업데이트
+        const newAccessToken = newTokens.accessToken.startsWith("Bearer ")
+          ? newTokens.accessToken
+          : `Bearer ${newTokens.accessToken}`;
+
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = newAccessToken;
+        }
+
+        // 대기 중인 요청들 처리
+        processQueue(null, newAccessToken);
+        isRefreshing = false;
+
+        // 원래 요청 재시도
+        return api(originalRequest);
+      } catch (refreshError) {
+        // 토큰 갱신 실패
+        clearTokens();
+        processQueue(refreshError, null);
+        isRefreshing = false;
+
+        // 로그인 페이지로 리다이렉트
+        if (
+          typeof window !== "undefined" &&
+          !window.location.pathname.includes("/login")
+        ) {
+          window.location.href = "/login";
+        }
+        return Promise.reject(refreshError);
+      }
+    }
+
+    // 401이 아니거나 이미 재시도한 경우, 일반 에러 처리
     console.error("API ERROR Response:", error.response?.data);
     console.error("API ERROR Status:", error.response?.status);
     return Promise.reject(error);
@@ -76,12 +190,97 @@ const handleApiError = (error: unknown, defaultMessage: string): never => {
 // [Existing APIs] 기존 페이지에서 사용하는 API (유지)
 // ============================================================================
 
+// 감정별 이모지 매핑
+const EMOTION_EMOJI: Record<string, string> = {
+  HAPPY: "😊",
+  SAD: "😢",
+  ANGRY: "😠",
+  NEUTRAL: "😐",
+  ANXIOUS: "😰",
+  SURPRISED: "😲",
+  DISGUST: "🤢",
+  CALM: "😌",
+  EXCITED: "🤩",
+  FEAR: "😨",
+};
+
+// 감정별 한글 설명 매핑
+const EMOTION_DESCRIPTION: Record<string, string> = {
+  HAPPY: "오늘은 기쁜 하루였네요. 따뜻한 감정이 가득한 하루를 보내셨군요.",
+  SAD: "슬픈 감정이 느껴지네요. 힘든 하루였을 수도 있지만, 내일은 더 나아질 거예요.",
+  ANGRY:
+    "화가 난 감정이 느껴집니다. 감정을 표현하는 것도 중요하지만, 차분히 마음을 다스려보세요.",
+  NEUTRAL: "평온한 하루였네요. 일상의 작은 행복을 찾아보세요.",
+  ANXIOUS: "불안한 감정이 느껴집니다. 깊게 숨을 쉬며 마음을 진정시켜보세요.",
+  SURPRISED: "놀라운 하루였네요! 새로운 경험이 기다리고 있을 거예요.",
+  DISGUST: "불쾌한 감정이 느껴집니다. 마음을 정화하고 새로운 시작을 해보세요.",
+  CALM: "차분하고 평온한 하루였네요. 마음의 여유를 느낄 수 있는 하루였습니다.",
+  EXCITED: "신나고 즐거운 하루였네요! 에너지가 넘치는 하루를 보내셨군요.",
+  FEAR: "두려운 감정이 느껴집니다. 하지만 용기를 내면 극복할 수 있을 거예요.",
+};
+
+// 감정 온도 매핑 (감정 점수를 온도로 변환)
+const getEmotionTemperature = (score: number): string => {
+  // 점수 범위: 0-100을 36.0-38.0도로 매핑
+  const temp = 36.0 + (score / 100) * 2.0;
+  return `${temp.toFixed(1)}°C`;
+};
+
 export const getEmotionData = async (): Promise<EmotionData> => {
   try {
-    const response = await api.get<EmotionData>("/api/emotion");
-    return response.data;
+    // 먼저 오늘의 일기를 가져옴
+    const todayDiary = await getTodayDiary();
+
+    if (todayDiary?.emotionAnalysis?.integratedEmotion) {
+      const emotion =
+        todayDiary.emotionAnalysis.integratedEmotion.emotion || "NEUTRAL";
+      const score = todayDiary.emotionAnalysis.integratedEmotion.score || 50;
+
+      return {
+        emotion: emotion,
+        description:
+          EMOTION_DESCRIPTION[emotion] || EMOTION_DESCRIPTION.NEUTRAL,
+        emoji: EMOTION_EMOJI[emotion] || EMOTION_EMOJI.NEUTRAL,
+        temperature: getEmotionTemperature(score),
+      };
+    }
+
+    // 오늘의 일기가 없으면 최근 일기를 가져옴
+    const recentDiaries = await getRecentDiaries();
+
+    if (recentDiaries.length > 0) {
+      const latestDiary = recentDiaries[0];
+      if (latestDiary?.emotionAnalysis?.integratedEmotion) {
+        const emotion =
+          latestDiary.emotionAnalysis.integratedEmotion.emotion || "NEUTRAL";
+        const score = latestDiary.emotionAnalysis.integratedEmotion.score || 50;
+
+        return {
+          emotion: emotion,
+          description:
+            EMOTION_DESCRIPTION[emotion] || EMOTION_DESCRIPTION.NEUTRAL,
+          emoji: EMOTION_EMOJI[emotion] || EMOTION_EMOJI.NEUTRAL,
+          temperature: getEmotionTemperature(score),
+        };
+      }
+    }
+
+    // 일기가 없으면 기본값 반환
+    return {
+      emotion: "NEUTRAL",
+      description: "아직 작성한 일기가 없습니다. 오늘의 감정을 기록해보세요!",
+      emoji: EMOTION_EMOJI.NEUTRAL,
+      temperature: "36.5°C",
+    };
   } catch (error) {
-    handleApiError(error, "감정 데이터 조회 실패");
+    // 에러가 발생해도 기본값 반환 (페이지가 깨지지 않도록)
+    console.error("감정 데이터 조회 실패:", error);
+    return {
+      emotion: "NEUTRAL",
+      description: "감정 데이터를 불러오지 못했습니다.",
+      emoji: EMOTION_EMOJI.NEUTRAL,
+      temperature: "36.5°C",
+    };
   }
 };
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageLayout } from "../components/common/PageLayout";
-import { getUserDiaries, deleteDiary, addBookmark, getAllBookmarks, type DiaryDtoResponse } from "@/lib/apiClient";
+import { getUserDiaries, deleteDiary, addBookmark, removeBookmark, getAllBookmarks, type DiaryDtoResponse } from "@/lib/apiClient";
 import { useUserData } from "@/hooks/useUserData";
 import { Bookmark } from "lucide-react";
 
@@ -16,13 +16,89 @@ const EMOTION_MAPPING: Record<string, { temperature: string; progress: number }>
   DISGUST: { temperature: "34.5", progress: 25 },
 };
 
-// 날짜 포맷 변환 함수
+// 감정별 이모지 매핑
+const EMOTION_EMOJI: Record<string, string> = {
+  HAPPY: "😊",
+  SAD: "😢",
+  ANGRY: "😠",
+  NEUTRAL: "😐",
+  ANXIOUS: "😰",
+  SURPRISED: "😲",
+  DISGUST: "🤢",
+  CALM: "😌",
+  EXCITED: "🤩",
+  FEAR: "😨",
+};
+
+// 감정 영어 -> 한글 매핑
+const EMOTION_TRANSLATION: Record<string, string> = {
+  HAPPY: "행복",
+  EXCITED: "흥분",
+  CALM: "평온",
+  ANXIOUS: "불안",
+  ANGRY: "화남",
+  SAD: "우울",
+  NEUTRAL: "평온",
+  SURPRISED: "놀람",
+  DISGUST: "혐오",
+  FEAR: "두려움",
+};
+
+// 감정을 한글로 변환하는 함수
+const translateEmotion = (emotion: string | undefined): string => {
+  if (!emotion) return "평온";
+  return EMOTION_TRANSLATION[emotion.toUpperCase()] || emotion;
+};
+
+// 날짜 포맷 변환 함수 - 일기 작성 당일 날짜를 안전하게 추출
 const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}.${month}.${day}`;
+  if (!dateString) {
+    // 날짜가 없으면 오늘 날짜 사용
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}.${month}.${day}`;
+  }
+  
+  try {
+    let date = new Date(dateString);
+    
+    // 유효하지 않은 날짜인지 확인
+    if (isNaN(date.getTime())) {
+      // 다른 형식 시도: 공백을 T로 변환
+      const normalized = dateString.replace(' ', 'T');
+      date = new Date(normalized);
+      
+      // 여전히 유효하지 않으면 오늘 날짜 사용
+      if (isNaN(date.getTime())) {
+        date = new Date();
+      }
+    }
+    
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    
+    // NaN 체크 - 유효하지 않으면 오늘 날짜 사용
+    if (isNaN(year) || isNaN(month) || isNaN(day)) {
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, "0");
+      const d = String(today.getDate()).padStart(2, "0");
+      return `${y}.${m}.${d}`;
+    }
+    
+    return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")}`;
+  } catch (error) {
+    console.error("날짜 파싱 오류:", error);
+    // 오류 발생 시 오늘 날짜 사용
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}.${month}.${day}`;
+  }
 };
 
 // 첫 50자만 추출하는 함수
@@ -100,10 +176,6 @@ export default function Records() {
   const endIndex = startIndex + itemsPerPage;
   const currentDiaries = diaries.slice(startIndex, endIndex);
 
-  const handleEdit = (id: number) => {
-    console.log("수정하기:", id);
-    navigate(`/write?id=${id}`);
-  };
 
   const handleDelete = async (id: number) => {
     if (confirm("정말 삭제하시겠습니까?")) {
@@ -130,14 +202,25 @@ export default function Records() {
     navigate("/write");
   };
 
-  const handleAddBookmark = async (diaryId: number) => {
+  const handleToggleBookmark = async (diaryId: number) => {
+    const isBookmarked = bookmarkedIds.has(diaryId);
     try {
-      await addBookmark(diaryId);
-      setBookmarkedIds((prev) => new Set(prev).add(diaryId));
-      alert("북마크에 추가되었습니다!");
+      if (isBookmarked) {
+        await removeBookmark(diaryId);
+        setBookmarkedIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(diaryId);
+          return newSet;
+        });
+        alert("북마크가 해제되었습니다.");
+      } else {
+        await addBookmark(diaryId);
+        setBookmarkedIds((prev) => new Set(prev).add(diaryId));
+        alert("북마크에 추가되었습니다!");
+      }
     } catch (err) {
-      console.error("북마크 추가 실패:", err);
-      alert("북마크 추가에 실패했습니다.");
+      console.error("북마크 처리 실패:", err);
+      alert(isBookmarked ? "북마크 해제에 실패했습니다." : "북마크 추가에 실패했습니다.");
     }
   };
 
@@ -212,7 +295,7 @@ export default function Records() {
       ) : (
         <>
           {/* 일기 카드 그리드 */}
-          <div className="max-w-[900px] mx-auto mb-12 px-8">
+          <div className="max-w-[1200px] mx-auto mb-12 px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {currentDiaries.map((diary) => {
                 const emotion = diary.emotionAnalysis?.integratedEmotion?.emotion || "NEUTRAL";
@@ -228,13 +311,13 @@ export default function Records() {
                     <div className="absolute top-4 right-4 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                       {/* 북마크 버튼 */}
                       <button
-                        onClick={() => handleAddBookmark(diary.id)}
+                        onClick={() => handleToggleBookmark(diary.id)}
                         className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
                           bookmarkedIds.has(diary.id)
                             ? "bg-yellow-400 hover:bg-yellow-500"
                             : "bg-gray-200 hover:bg-gray-300"
                         }`}
-                        title={bookmarkedIds.has(diary.id) ? "북마크됨" : "북마크 추가"}
+                        title={bookmarkedIds.has(diary.id) ? "북마크 해제" : "북마크 추가"}
                       >
                         <Bookmark
                           className={`w-4 h-4 ${
@@ -253,7 +336,7 @@ export default function Records() {
                     </div>
 
                     {/* 제목 (첫 50자) */}
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2 pr-16">
+                    <h3 className="text-base font-semibold text-gray-800 mb-2 pr-32 line-clamp-2 break-words">
                       {getTitleFromContent(diary.content)}
                     </h3>
                     <p className="text-sm text-gray-500 mb-4">
@@ -261,9 +344,11 @@ export default function Records() {
                     </p>
 
                     {/* 내용 미리보기 */}
-                    <p className="text-sm text-gray-700 mb-4 line-clamp-3">
-                      {diary.content}
-                    </p>
+                    <div className="w-[300px] h-[70px] mb-4 overflow-hidden">
+                      <p className="text-base text-gray-700 leading-relaxed">
+                        {diary.content}
+                      </p>
+                    </div>
 
                     {/* 감정 키워드 */}
                     {diary.emotionAnalysis?.keywords && diary.emotionAnalysis.keywords.length > 0 && (
@@ -279,31 +364,29 @@ export default function Records() {
                       </div>
                     )}
 
-                    {/* 기분 슬라이더 */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-gray-500">
-                          감정: {emotion}
-                        </span>
-                        <span className="text-sm font-semibold text-gray-700">
-                          {emotionData.temperature}°C
-                        </span>
-                      </div>
-                      <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-yellow-400 via-orange-400 to-red-500 rounded-full transition-all"
-                          style={{ width: `${emotionData.progress}%` }}
-                        />
+                    {/* 오늘의 감정 */}
+                    <div className="mb-4 p-4 bg-[#FFF9E6] rounded-lg border border-[#FFD66B]">
+                      <p className="text-sm text-gray-600 mb-2">오늘의 감정</p>
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{EMOTION_EMOJI[emotion] || EMOTION_EMOJI.NEUTRAL}</span>
+                        <div>
+                          <p className="text-base font-semibold text-gray-800">
+                            {translateEmotion(emotion)}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {emotionData.temperature}°C
+                          </p>
+                        </div>
                       </div>
                     </div>
 
                     {/* 버튼 그룹 */}
                     <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                       <button
-                        onClick={() => handleEdit(diary.id)}
+                        onClick={() => navigate(`/diary?id=${diary.id}`)}
                         className="flex-1 py-2 px-4 bg-white border-2 border-[#FFD66B] text-gray-700 rounded-md hover:bg-[#FFF9E6] transition-colors text-sm font-medium"
                       >
-                        수정하기
+                        상세보기
                       </button>
                       <button
                         onClick={() => handleDelete(diary.id)}

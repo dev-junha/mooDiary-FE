@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import basicBookImg from "../assets/basicBookImg.png";
 import {
@@ -30,6 +30,9 @@ export default function RecMusic() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [recommendLoading, setRecommendLoading] = useState<boolean>(false);
+  // 중복 요청 방지를 위한 ref
+  const isRequestingRef = useRef<boolean>(false);
+  const hasLoadedRef = useRef<boolean>(false);
 
   const recommendation = recommendations[currentIndex] || null;
 
@@ -58,9 +61,10 @@ export default function RecMusic() {
     loadEmotionData();
   }, []);
 
-  // 페이지 로드 시 자동으로 음악 추천 가져오기
+  // 페이지 로드 시 자동으로 음악 추천 가져오기 (한 번만 실행)
   useEffect(() => {
-    if (emotionData && recommendations.length === 0) {
+    if (emotionData && recommendations.length === 0 && !hasLoadedRef.current && !isRequestingRef.current) {
+      hasLoadedRef.current = true;
       handleCategorySelect("music");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -86,6 +90,12 @@ export default function RecMusic() {
       return;
     }
 
+    // 중복 요청 방지: 이미 요청 중이거나 이미 로드된 경우
+    if (isRequestingRef.current) {
+      console.log("이미 요청이 진행 중입니다. 중복 요청을 방지합니다.");
+      return;
+    }
+
     // music 카테고리인 경우 현재 페이지에서 API 호출
     if (selectedCategory === category && recommendations.length > 0) return;
 
@@ -93,20 +103,62 @@ export default function RecMusic() {
     setRecommendLoading(true);
     setError(null);
     setCurrentIndex(0);
+    isRequestingRef.current = true;
 
     try {
-      // 여러 개의 추천을 가져오기 (3개)
-      const recommendationPromises = Array(3).fill(null).map(() => createMusicRecommendation());
-      const results = await Promise.all(recommendationPromises);
-      const validResults = results.filter((r): r is Recommendation => r !== null);
-      
-      setRecommendations(validResults);
+      // 여러 개의 추천을 순차적으로 가져오기 (3개)
+      // 동시 요청으로 인한 서버 부하를 방지하기 위해 순차 처리
+      const results: Recommendation[] = [];
+      const maxRetries = 2; // 각 요청당 최대 재시도 횟수
+
+      for (let i = 0; i < 3; i++) {
+        let retryCount = 0;
+        let success = false;
+
+        while (retryCount <= maxRetries && !success) {
+          try {
+            const recommendation = await createMusicRecommendation();
+            if (recommendation) {
+              results.push(recommendation);
+              success = true;
+            }
+          } catch (err: any) {
+            retryCount++;
+            if (retryCount > maxRetries) {
+              console.warn(
+                `추천 ${i + 1}번째 요청 실패 (재시도 ${maxRetries}회 실패):`,
+                err,
+              );
+              // 일부 실패해도 계속 진행
+            } else {
+              // 재시도 전에 짧은 딜레이
+              await new Promise((resolve) =>
+                setTimeout(resolve, 500 * retryCount),
+              );
+            }
+          }
+        }
+
+        // 요청 사이에 짧은 딜레이 추가 (서버 부하 방지)
+        if (i < 2) {
+          await new Promise((resolve) => setTimeout(resolve, 300));
+        }
+      }
+
+      if (results.length === 0) {
+        throw new Error(
+          "추천 콘텐츠를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.",
+        );
+      }
+
+      setRecommendations(results);
     } catch (err: any) {
       console.error(`추천 콘텐츠 로드 실패 (${category}):`, err);
       setError(err.message || `추천 콘텐츠를 불러오지 못했습니다: ${category}`);
       setRecommendations([]);
     } finally {
       setRecommendLoading(false);
+      isRequestingRef.current = false;
     }
   };
 

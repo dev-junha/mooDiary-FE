@@ -140,8 +140,36 @@ export default function EmoResult() {
         // x좌표 계산 시 n=1일 때 0으로 나누기 방지
         const x = n <= 1 ? (widthLeft + widthRight) / 2 : Math.round(widthLeft + (i / (n - 1)) * (widthRight - widthLeft));
         const y = mapTempToY(p.temp);
-        const d = new Date(p.date);
-        const mmdd = `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+        
+        // 날짜 파싱 - 안전하게 처리
+        let d: Date;
+        try {
+          d = new Date(p.date);
+          if (isNaN(d.getTime())) {
+            // 유효하지 않은 날짜면 다른 형식 시도
+            const normalized = p.date.replace(' ', 'T');
+            d = new Date(normalized);
+            if (isNaN(d.getTime())) {
+              // 여전히 유효하지 않으면 오늘 날짜 사용
+              d = new Date();
+            }
+          }
+        } catch (error) {
+          // 오류 발생 시 오늘 날짜 사용
+          d = new Date();
+        }
+        
+        const month = d.getMonth() + 1;
+        const day = d.getDate();
+        
+        // NaN 체크 - 유효하지 않으면 오늘 날짜 사용
+        let mmdd: string;
+        if (isNaN(month) || isNaN(day)) {
+          const today = new Date();
+          mmdd = `${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
+        } else {
+          mmdd = `${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
+        }
         
         return { 
             date: mmdd, 

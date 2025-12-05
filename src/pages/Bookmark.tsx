@@ -73,12 +73,19 @@ export default function Bookmark() {
     }
   };
 
-  // 날짜 포맷팅 함수 (ISO 8601 문자열 또는 LocalDateTime 형식 처리)
+  // 날짜 포맷팅 함수 - 일기 작성 당일 날짜를 안전하게 추출
   const formatDate = (dateString: string) => {
-    if (!dateString) return "";
+    if (!dateString) {
+      // 날짜가 없으면 오늘 날짜 사용
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}.${month}.${day}`;
+    }
+    
     try {
       // LocalDateTime 형식 (예: "2024-01-15T10:30:00" 또는 "2024-01-15T10:30:00.123")
-      // 또는 이미 파싱된 날짜 객체
       let date: Date;
       
       if (typeof dateString === 'string') {
@@ -91,29 +98,38 @@ export default function Bookmark() {
           const normalized = dateString.replace(' ', 'T');
           date = new Date(normalized);
           
+          // 여전히 유효하지 않으면 오늘 날짜 사용
           if (isNaN(date.getTime())) {
-            console.error("날짜 파싱 실패:", dateString);
-            return "";
+            date = new Date();
           }
         }
       } else {
-        return "";
+        // 문자열이 아니면 오늘 날짜 사용
+        date = new Date();
       }
       
       const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
       
-      // NaN 체크
+      // NaN 체크 - 유효하지 않으면 오늘 날짜 사용
       if (isNaN(year) || isNaN(month) || isNaN(day)) {
-        console.error("날짜 값이 유효하지 않습니다:", dateString);
-        return "";
+        const today = new Date();
+        const y = today.getFullYear();
+        const m = String(today.getMonth() + 1).padStart(2, '0');
+        const d = String(today.getDate()).padStart(2, '0');
+        return `${y}.${m}.${d}`;
       }
       
-      return `${year}.${month}.${day}`;
+      return `${year}.${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')}`;
     } catch (error) {
       console.error("날짜 파싱 오류:", error, dateString);
-      return "";
+      // 오류 발생 시 오늘 날짜 사용
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}.${month}.${day}`;
     }
   };
 

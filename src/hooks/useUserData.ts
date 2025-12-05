@@ -56,10 +56,13 @@ export const useUserData = (): UseUserDataReturn => {
       }
 
       // localStorage에 정보가 없으면 API 호출 (fallback)
+      // 토큰이 이미 "Bearer "로 시작하는지 확인
+      const authToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+      
       const response = await fetch("/api/user/userdata", {
         credentials: "include",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: authToken,
         },
       });
 

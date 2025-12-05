@@ -37,10 +37,13 @@ export const useProfileData = (): UseProfileDataReturn => {
         setLoading(true);
         setIsAuthenticated(true);
 
+        // 토큰이 이미 "Bearer "로 시작하는지 확인
+        const authToken = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+        
         const response = await fetch("/api/main/user/profile", {
           credentials: "include",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: authToken,
           },
         });
 
