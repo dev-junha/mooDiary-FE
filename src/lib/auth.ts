@@ -142,8 +142,12 @@ export const refreshToken = async (refreshTokenValue: string): Promise<AuthToken
  */
 export const testUsersApi = async (): Promise<{ status: string; message: string }> => {
   try {
+    const token = getAccessToken();
     const response = await fetch(`${API_BASE}/api/users/test`, {
       method: "GET",
+      headers: {
+        Authorization: token || "",
+      },
       credentials: "include",
     });
 
@@ -163,11 +167,11 @@ export const testUsersApi = async (): Promise<{ status: string; message: string 
 };
 
 export const saveTokens = (tokens: AuthTokens): void => {
-  localStorage.setItem("accessToken", tokens.accessToken);
+  localStorage.setItem("accessToken", `Bearer ${tokens.accessToken}`);
   localStorage.setItem("refreshToken", tokens.refreshToken);
   localStorage.setItem("tokenType", tokens.tokenType);
   localStorage.setItem("expiresIn", tokens.expiresIn.toString());
-  localStorage.setItem("authToken", tokens.accessToken); // AuthContext 호환성
+  localStorage.setItem("authToken", `Bearer ${tokens.accessToken}`); // AuthContext 호환성
   
   // 사용자 정보도 저장
   if (tokens.user) {
