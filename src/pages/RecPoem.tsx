@@ -21,6 +21,26 @@ interface Category {
   disabled?: boolean;
 }
 
+// 감정 영어 -> 한글 매핑
+const EMOTION_TRANSLATION: Record<string, string> = {
+  HAPPY: "행복",
+  EXCITED: "흥분",
+  CALM: "평온",
+  ANXIOUS: "불안",
+  ANGRY: "화남",
+  SAD: "우울",
+  NEUTRAL: "평온",
+  SURPRISED: "놀람",
+  DISGUST: "혐오",
+  FEAR: "두려움",
+};
+
+// 감정을 한글로 변환하는 함수
+const translateEmotion = (emotion: string | undefined): string => {
+  if (!emotion) return "평온";
+  return EMOTION_TRANSLATION[emotion.toUpperCase()] || emotion;
+};
+
 export default function RecPoem() {
   const navigate = useNavigate();
   const [emotionData, setEmotionData] = useState<EmotionData | null>(null);
@@ -247,7 +267,7 @@ export default function RecPoem() {
                         {emotionData.emoji || "😊"}
                       </div>
                       <h3 className="text-3xl font-semibold text-gray-800 mb-2">
-                        오늘의 감정 : {emotionData.emotion || "기쁨"}
+                        오늘의 감정 : {translateEmotion(emotionData.emotion) || "기쁨"}
                       </h3>
                     </div>
                     <div className="text-center mb-4 max-w-[700px]">

@@ -192,16 +192,16 @@ const handleApiError = (error: unknown, defaultMessage: string): never => {
 
 // 감정별 이모지 매핑
 const EMOTION_EMOJI: Record<string, string> = {
-  HAPPY: "😊",
-  SAD: "😢",
-  ANGRY: "😠",
-  NEUTRAL: "😐",
-  ANXIOUS: "😰",
-  SURPRISED: "😲",
-  DISGUST: "🤢",
-  CALM: "😌",
-  EXCITED: "🤩",
-  FEAR: "😨",
+  행복: "😊",
+  슬픔: "😢",
+  화남: "😠",
+  보통: "😐",
+  불안: "😰",
+  놀람: "😲",
+  혐오: "🤢",
+  평온: "😌",
+  흥분: "🤩",
+  두려움: "😨",
 };
 
 // 감정별 한글 설명 매핑

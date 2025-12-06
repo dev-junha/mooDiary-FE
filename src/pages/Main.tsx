@@ -19,6 +19,26 @@ const EMOTION_EMOJI: Record<string, string> = {
   DISGUST: "🤢",
 };
 
+// 감정 영어 -> 한글 매핑
+const EMOTION_TRANSLATION: Record<string, string> = {
+  HAPPY: "행복",
+  EXCITED: "흥분",
+  CALM: "평온",
+  ANXIOUS: "불안",
+  ANGRY: "화남",
+  SAD: "우울",
+  NEUTRAL: "평온",
+  SURPRISED: "놀람",
+  DISGUST: "혐오",
+  FEAR: "두려움",
+};
+
+// 감정을 한글로 변환하는 함수
+const translateEmotion = (emotion: string | undefined): string => {
+  if (!emotion) return "평온";
+  return EMOTION_TRANSLATION[emotion.toUpperCase()] || emotion;
+};
+
 // 날짜 포맷 변환 함수 - 일기 작성 당일 날짜를 안전하게 추출
 const formatDate = (dateString: string): string => {
   if (!dateString) {
@@ -193,7 +213,7 @@ export default function Index() {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-2xl">{emoji}</span>
-                            <span className="text-sm text-gray-600">{emotion}</span>
+                            <span className="text-sm text-gray-600">{translateEmotion(emotion)}</span>
                           </div>
                         </div>
                       );

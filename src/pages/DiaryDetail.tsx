@@ -113,7 +113,8 @@ const EMOTION_TRANSLATION: Record<string, string> = {
 // 감정을 한글로 변환하는 함수
 const translateEmotion = (emotion: string | undefined): string => {
   if (!emotion) return "평온";
-  return EMOTION_TRANSLATION[emotion.toUpperCase()] || emotion;
+  const upperEmotion = emotion.toUpperCase();
+  return EMOTION_TRANSLATION[upperEmotion] || "평온";
 };
 
 // 숫자 포맷팅 함수 (NaN 방지)
@@ -334,8 +335,13 @@ export default function DiaryDetail() {
                       e.preventDefault();
                     }
                   }}
-                  className="w-full text-4xl font-['jsMath-cmti10'] text-[#8E573E] font-bold mb-3 p-4 border-2 border-[#FFD66B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8E573E] overflow-x-auto"
+                  className="w-full text-4xl font-['jsMath-cmti10'] text-[#8E573E] font-bold mb-3 p-4 border-2 border-[#FFD66B] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8E573E] overflow-x-auto whitespace-nowrap"
                   placeholder="제목을 입력하세요..."
+                  onPaste={(e) => {
+                    e.preventDefault();
+                    const text = e.clipboardData.getData('text/plain').replace(/\n/g, ' ');
+                    setEditedTitle(text);
+                  }}
                 />
               ) : (
                 <h1 className="text-4xl font-['jsMath-cmti10'] text-[#8E573E] font-bold mb-3 break-words">
@@ -397,7 +403,7 @@ export default function DiaryDetail() {
               <img
                 src={diary.imageUrl}
                 alt="일기 이미지"
-                className="w-full max-h-96 object-cover rounded-lg"
+                className="rounded-lg"
               />
             </div>
           )}
