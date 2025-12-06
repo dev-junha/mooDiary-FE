@@ -304,7 +304,7 @@ export default function Records() {
                 return (
                   <div
                     key={diary.id}
-                    className="bg-[#FFFEF9] rounded-lg p-4 shadow-md border-4 border-[#FFD66B] relative cursor-pointer hover:shadow-lg transition-shadow"
+                    className="bg-[#FFFEF9] rounded-lg p-3 shadow-md border-4 border-[#FFD66B] relative cursor-pointer hover:shadow-lg transition-shadow h-[350px] flex flex-col"
                     onClick={() => navigate(`/diary?id=${diary.id}`)}
                   >
                     {/* 우측 상단 버튼 그룹 */}
@@ -336,36 +336,38 @@ export default function Records() {
                     </div>
 
                     {/* 제목 (첫 50자) */}
-                    <h3 className="text-sm font-semibold text-gray-800 mb-1 pr-32 line-clamp-2 break-words">
+                    <h3 className="text-sm font-semibold text-gray-800 mb-1 pr-32 line-clamp-2 break-words min-h-[2.5rem]">
                       {getTitleFromContent(diary.content)}
                     </h3>
-                    <p className="text-xs text-gray-500 mb-2">
+                    <p className="text-xs text-gray-500 mb-1.5">
                       {formatDate(diary.createdAt)}
                     </p>
 
                     {/* 내용 미리보기 */}
-                    <div className="w-[300px] h-[50px] mb-2 overflow-hidden">
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                    <div className="flex-1 mb-1.5 overflow-hidden">
+                      <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
                         {diary.content}
                       </p>
                     </div>
 
                     {/* 감정 키워드 */}
-                    {diary.emotionAnalysis?.keywords && diary.emotionAnalysis.keywords.length > 0 && (
-                      <div className="mb-2 flex flex-wrap gap-1">
-                        {diary.emotionAnalysis.keywords.slice(0, 3).map((keyword, idx) => (
+                    <div className="mb-1.5 min-h-[1.5rem] flex flex-wrap gap-1">
+                      {diary.emotionAnalysis?.keywords && diary.emotionAnalysis.keywords.length > 0 ? (
+                        diary.emotionAnalysis.keywords.slice(0, 3).map((keyword, idx) => (
                           <span
                             key={idx}
                             className="px-1.5 py-0.5 bg-[#FFF9E6] text-[#8E573E] text-xs rounded-full"
                           >
                             #{keyword}
                           </span>
-                        ))}
-                      </div>
-                    )}
+                        ))
+                      ) : (
+                        <span className="px-1.5 py-0.5 bg-transparent text-transparent text-xs">#</span>
+                      )}
+                    </div>
 
                     {/* 오늘의 감정 */}
-                    <div className="mb-3 p-2 bg-[#FFF9E6] rounded-lg border border-[#FFD66B]">
+                    <div className="mb-2 p-2 bg-[#FFF9E6] rounded-lg border border-[#FFD66B]">
                       <p className="text-xs text-gray-600 mb-1">오늘의 감정</p>
                       <div className="flex items-center gap-2">
                         <span className="text-xl">{EMOTION_EMOJI[emotion] || EMOTION_EMOJI.NEUTRAL}</span>
@@ -381,7 +383,7 @@ export default function Records() {
                     </div>
 
                     {/* 버튼 그룹 */}
-                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex gap-2 mt-auto" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => navigate(`/diary?id=${diary.id}`)}
                         className="flex-1 py-1.5 px-3 bg-white border-2 border-[#FFD66B] text-gray-700 rounded-md hover:bg-[#FFF9E6] transition-colors text-xs font-medium"
