@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useUserData } from "@/hooks/useUserData";  // ⭐ 추가
 import { useProfileData } from "@/hooks/useProfileData";
-import MyPageHeader from "@/components/layout/MyPageHeader.tsx";
+import MyPageHeader from "@/components/layout/MyPageHeader";
 
 export default function App() {
   const { user, refetch } = useUserData();  // ⭐ fetchUserData 제거하고 이것만 사용

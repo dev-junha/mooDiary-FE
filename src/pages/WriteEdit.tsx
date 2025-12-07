@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { PageLayout } from '@/components/common/PageLayout.tsx'; 
+import { PageLayout } from '@/components/common/PageLayout'; 
 import { useNavigate } from 'react-router-dom';
 // [수정] 수정된 API 함수들 import
 import { 
