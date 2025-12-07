@@ -4,7 +4,7 @@ import recordBg from "@/assets/recordBg.png";
 import { useNavigate } from "react-router-dom";
 import { useUserData } from "@/hooks/useUserData";
 import { RECOMMENDATION_CATEGORIES } from "@/constants/navigation";
-import { PageLayout } from "@/components/common/PageLayout";
+import { PageLayout } from "@/components/common/PageLayout.tsx";
 import { getTodayDiary, getRecentDiaries } from "@/lib/apiClient";
 import type { DiaryResponse } from "@shared/types";
 
