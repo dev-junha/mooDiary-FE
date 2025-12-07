@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import Header from "../components/layout/Header";
+import Header from "@/components/layout/Header";
 import { useNavigate } from "react-router-dom";
-import { getUserDiaries, getUserId, type DiaryDtoResponse } from "../lib/apiClient";
+import { getUserDiaries, getUserId, type DiaryDtoResponse } from "@/lib/apiClient";
 
 // [추가] 백엔드 영문 감정 -> 프론트엔드 한글 매핑
 // 백엔드는 Enum(영어)으로 저장해야 오류가 안 나므로, 표시할 때만 변환합니다.

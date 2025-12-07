@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import Header from "../components/layout/Header";
+import Header from "@/components/layout/Header";
 import { useNavigate } from "react-router-dom";
 import {
   getUserDiaries,
   getUserId,
   type DiaryDtoResponse,
-} from "../lib/apiClient";
+} from "@/lib/apiClient";
 
 // [추가] 백엔드 영문 감정 -> 프론트엔드 한글 매핑
 const EMOTION_TRANSLATION: Record<string, string> = {
