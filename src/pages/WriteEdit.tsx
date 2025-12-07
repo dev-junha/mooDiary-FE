@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { PageLayout } from '../components/common/PageLayout'; 
+import { PageLayout } from '@/components/common/PageLayout.tsx'; 
 import { useNavigate } from 'react-router-dom';
 // [수정] 수정된 API 함수들 import
 import { 
@@ -11,7 +11,7 @@ import {
   getUserId,
   type DiaryDtoResponse,
   type EmotionAnalysisResponse 
-} from '../lib/apiClient';
+} from '@/lib/apiClient';
 
 interface LoadingState {
   save: boolean;
