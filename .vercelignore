@@ -1,0 +1,21 @@
+# Vercel 배포 시 제외할 파일/폴더
+
+# Netlify 관련 (Vercel에서는 사용하지 않음)
+netlify/
+netlify.toml
+
+# 개발 관련
+.vscode/
+.idea/
+*.log
+.DS_Store
+
+# 테스트 관련
+coverage/
+.nyc_output/
+
+# 기타
+*.local
+.env.local
+.env.*.local
+
