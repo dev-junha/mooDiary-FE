@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import Frame from "@/components/ui/frame";
-import Header from "@/components/layout/Header";
+import Header from "@/components/layout/Header.tsx";
 
 interface PageLayoutProps {
   children: ReactNode;
