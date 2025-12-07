@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { PageLayout } from "@/components/common/PageLayout";
+import { PageLayout } from "@/components/common/PageLayout.tsx";
 import {
   getDiaryById,
   getUserId,

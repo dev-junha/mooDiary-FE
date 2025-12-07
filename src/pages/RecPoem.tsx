@@ -1,18 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import basicBookImg from "../assets/basicBookImg.png";
+import basicBookImg from "@/assets/basicBookImg.png";
 import {
   getEmotionData,
   createBookRecommendation,
   createMovieRecommendation,
   createMusicRecommendation,
   createPoemRecommendation,
-} from "../lib/apiClient";
-import { CATEGORY_COLORS } from "../constants/colors";
-import { PageLayout } from "../components/common/PageLayout";
-import { LoadingSpinner } from "../components/common/LoadingSpinner";
-import { ErrorDisplay } from "../components/common/ErrorDisplay";
-import type { EmotionData, Recommendation } from "../../shared/types";
+} from "@/lib/apiClient";
+import { CATEGORY_COLORS } from "@/constants/colors";
+import { PageLayout } from "@/components/common/PageLayout.tsx";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner.tsx";
+import { ErrorDisplay } from "@/components/common/ErrorDisplay.tsx";
+import type { EmotionData, Recommendation } from "@shared/types";
 
 interface Category {
   id: string;

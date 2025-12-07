@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageLayout } from "../components/common/PageLayout";
+import { PageLayout } from "@/components/common/PageLayout.tsx";
 import { getUserDiaries, deleteDiary, addBookmark, removeBookmark, getAllBookmarks, type DiaryDtoResponse } from "@/lib/apiClient";
 import { useUserData } from "@/hooks/useUserData";
 import { Bookmark } from "lucide-react";

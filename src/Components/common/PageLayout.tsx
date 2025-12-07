@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import Frame from "@/components/ui/frame";
+import Frame from "@/components/ui/frame.tsx";
 import Header from "@/components/layout/Header.tsx";
 
 interface PageLayoutProps {
